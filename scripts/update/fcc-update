@@ -7,5 +7,5 @@ case "$status" in
     10) ;;
     *) exit "$status" ;;
 esac
-installer=$(curl -fsSL "https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.sh")
+installer=$(curl -fsSL "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh")
 exec sh -c "$installer" sh "$@"

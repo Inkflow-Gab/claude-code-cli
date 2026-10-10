@@ -3785,8 +3785,8 @@ def test_install_ps1_preserves_valid_existing_tools(
         call for call in powershell_harness.calls() if call.startswith("download:")
     ]
     assert download_calls == [
-        "download:https://raw.githubusercontent.com/Alishahryar1/"
-        "free-claude-code/main/scripts/install-muse.ps1"
+        "download:https://raw.githubusercontent.com/Inkflow-Gab/"
+        "claude-code-cli/main/scripts/install-muse.ps1"
     ]
     assert "muse-install:external" in powershell_harness.calls()
     assert "leaving it unchanged" in result.stdout
@@ -4245,7 +4245,7 @@ def test_installers_use_native_clients_and_single_python_selection() -> None:
         assert "git+" not in text
         assert "git --version" not in text
         assert (
-            "https://github.com/Alishahryar1/free-claude-code/archive/refs/heads/main.zip"
+            "https://github.com/Inkflow-Gab/claude-code-cli/archive/refs/heads/main.zip"
             not in text
         )
         assert "python install" not in text
@@ -4259,7 +4259,7 @@ def test_installers_use_native_clients_and_single_python_selection() -> None:
     assert "https://x.ai/cli/install.ps1" in powershell
     assert "https://dev.meta.ai/install.sh" in shell
     assert (
-        "https://raw.githubusercontent.com/Alishahryar1/free-claude-code/"
+        "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/"
         "main/scripts/install-muse.ps1"
     ) in powershell
 

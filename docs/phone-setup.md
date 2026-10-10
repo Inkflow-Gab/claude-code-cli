@@ -27,13 +27,13 @@ Takes about five minutes. Telegram is the easier default.
 macOS / Linux:
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.sh" | sh
+curl -fsSL "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh" | sh
 ```
 
 Windows PowerShell:
 
 ```powershell
-& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.ps1")))
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.ps1")))
 ```
 
 When prompted, choose **at least one coding agent** (Claude Code, Codex, etc.).
@@ -203,13 +203,13 @@ agent works on it.
 Re-run the installer with local voice support:
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.sh" | sh -s -- --voice-local
+curl -fsSL "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh" | sh -s -- --voice-local
 ```
 
 For an NVIDIA GPU:
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.sh" | sh -s -- --voice-local --torch-backend cu130
+curl -fsSL "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh" | sh -s -- --voice-local --torch-backend cu130
 ```
 
 Then restart `fcc-server`, and in **Messaging → Voice** choose `cpu` or `cuda`.
@@ -217,7 +217,7 @@ Then restart `fcc-server`, and in **Messaging → Voice** choose `cpu` or `cuda`
 Windows PowerShell, local voice:
 
 ```powershell
-& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.ps1"))) -VoiceLocal
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.ps1"))) -VoiceLocal
 ```
 
 ---
