@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from free_claude_code.application.model_catalog import ModelCatalog
+from free_claude_code.cli.spinner import StartupSpinner
 from free_claude_code.config.loader import get_settings
 from free_claude_code.config.server_urls import local_proxy_root_url
 from free_claude_code.config.settings import Settings
@@ -95,6 +96,9 @@ def launch_harness(spec: HarnessSpec, argv: Sequence[str] | None = None) -> None
     base_env = dict(os.environ)
     auth_token = base_env.get("ANTHROPIC_AUTH_TOKEN", "")
     stage = "load settings"
+    # The instance is created early so `finally` can always stop it, but it
+    # only starts drawing after the fast self-reporting setup steps below.
+    spinner = StartupSpinner(f"Starting {spec.display_name}...")
     try:
         binary_path = resolve_client_binary(
             binary_name=spec.binary_name,
@@ -109,6 +113,11 @@ def launch_harness(spec: HarnessSpec, argv: Sequence[str] | None = None) -> None
                 exit_code=126,
                 install_hint=spec.install_hint,
             )
+        # Cosmetic feedback for the slower phase: settings, the proxy
+        # preflight, model catalog fetch, and config generation. It is removed
+        # before the client takes over the terminal, and the two fast steps
+        # above still report their own errors on a clean line.
+        spinner.start()
         settings = get_settings()
         auth_token = settings.proxy_auth_token.strip()
         if not auth_token:
@@ -135,6 +144,8 @@ def launch_harness(spec: HarnessSpec, argv: Sequence[str] | None = None) -> None
                 _check_native(
                     binary_path, prepared.activation_check, prepared.env, exit_code=1
                 )
+            # Hand the terminal to the client before its TUI paints over.
+            spinner.stop()
             stage = "start process"
             run_client_process(
                 command=prepared.command,
@@ -151,5 +162,8 @@ def launch_harness(spec: HarnessSpec, argv: Sequence[str] | None = None) -> None
         )
         if auth_token:
             message = message.replace(auth_token, "[redacted]")
+        spinner.stop()
         print(message, file=sys.stderr)
         raise SystemExit(exc.exit_code if isinstance(exc, LaunchError) else 1) from None
+    finally:
+        spinner.stop()
