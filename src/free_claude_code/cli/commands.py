@@ -26,7 +26,7 @@ from free_claude_code.config.server_urls import local_admin_url, local_proxy_roo
 from free_claude_code.config.settings import Settings
 
 from .server_socket import ServerSockets
-from .spinner import StartupSpinner
+from .spinner import StartupAnimation
 
 if TYPE_CHECKING:
     import uvicorn
@@ -146,7 +146,7 @@ class ServerSupervisor:
         self._auto_browser_opened = False
         self._owned_server = False
         self._restart_generation = 0
-        self._spinner = StartupSpinner("Starting Free Claude Code...")
+        self._spinner = StartupAnimation("Starting Free Claude Code...")
 
     @property
     def status(self) -> ServerStatus:

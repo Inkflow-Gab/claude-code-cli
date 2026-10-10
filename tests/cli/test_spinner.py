@@ -36,6 +36,30 @@ def test_animation_follows_no_spinner_and_term(monkeypatch):
 def test_disabled_spinner_draws_nothing(monkeypatch):
     monkeypatch.setenv("TERM", "xterm")
     stream = _Stream(tty=False)
-    with spinner.StartupSpinner("Starting...", stream=stream) as active:
+    with spinner.StartupAnimation("Starting...", stream=stream) as active:
         assert not active.enabled
     assert stream.getvalue() == ""
+
+
+def test_rainbow_render_uses_ansi_color_and_spark(monkeypatch):
+    import re
+
+    monkeypatch.setenv("TERM", "xterm")
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    active = spinner.StartupAnimation("Booting...", stream=_Stream(tty=True))
+    assert active.color
+    rendered = active._render(3)
+    # Each character is wrapped in rotating ANSI color with a bright spark.
+    assert re.sub(r"\033\[\d+m", "", rendered) == "Booting..."
+    assert "\033[" in rendered
+    assert "\033[97m" in rendered
+    # The spark travels: a later frame colors a different character bright.
+    assert active._render(1) != rendered
+
+
+def test_no_color_turns_off_ansi_painting(monkeypatch):
+    monkeypatch.setenv("TERM", "xterm")
+    monkeypatch.setenv("NO_COLOR", "1")
+    active = spinner.StartupAnimation("Booting...", stream=_Stream(tty=True))
+    assert active.enabled
+    assert not active.color

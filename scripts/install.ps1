@@ -77,11 +77,62 @@ Options:
 "@
 }
 
-function Write-Step {
+$InstallerAnimPalette = @(
+    [ConsoleColor]::BrightRed,
+    [ConsoleColor]::Yellow,
+    [ConsoleColor]::Green,
+    [ConsoleColor]::Cyan,
+    [ConsoleColor]::Blue,
+    [ConsoleColor]::Magenta
+)
+
+function Write-PlainStep {
     param([string] $Message)
 
     Write-Host ""
     Write-Host "==> $Message"
+}
+
+function Write-Step {
+    param([string] $Message)
+
+    # The animated shimmer is drawn with the console cursor, so it only runs on
+    # a real interactive terminal without NO_COLOR. Piped and CI output keeps
+    # the plain step header byte-for-byte identical.
+    $animate = $false
+    if ($Message) {
+        try {
+            $animate = (-not [Console]::IsOutputRedirected) -and (-not $env:NO_COLOR)
+        } catch {
+            $animate = $false
+        }
+    }
+    if (-not $animate) {
+        Write-PlainStep $Message
+        return
+    }
+    try {
+        $length = $Message.Length
+        $frames = [Math]::Min(10, [Math]::Max(3, $length))
+        for ($frame = 0; $frame -lt $frames; $frame++) {
+            [Console]::SetCursorPosition(0, [Console]::CursorTop)
+            for ($index = 0; $index -lt $length; $index++) {
+                $color = $InstallerAnimPalette[($frame + $index) % $InstallerAnimPalette.Count]
+                if ($index -eq $frame) {
+                    $color = [ConsoleColor]::White
+                }
+                Write-Host -NoNewline -ForegroundColor $color $Message[$index]
+            }
+            Start-Sleep -Milliseconds 45
+        }
+        [Console]::SetCursorPosition(0, [Console]::CursorTop)
+        Write-Host -NoNewline (" " * $length)
+        [Console]::SetCursorPosition(0, [Console]::CursorTop)
+        Write-PlainStep $Message
+    } catch {
+        # Never let the decoration break installation output.
+        Write-PlainStep $Message
+    }
 }
 
 function Test-InteractiveInstaller {

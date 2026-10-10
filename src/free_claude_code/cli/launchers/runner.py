@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from free_claude_code.application.model_catalog import ModelCatalog
-from free_claude_code.cli.spinner import StartupSpinner
+from free_claude_code.cli.spinner import StartupAnimation
 from free_claude_code.config.loader import get_settings
 from free_claude_code.config.server_urls import local_proxy_root_url
 from free_claude_code.config.settings import Settings
@@ -98,7 +98,7 @@ def launch_harness(spec: HarnessSpec, argv: Sequence[str] | None = None) -> None
     stage = "load settings"
     # The instance is created early so `finally` can always stop it, but it
     # only starts drawing after the fast self-reporting setup steps below.
-    spinner = StartupSpinner(f"Starting {spec.display_name}...")
+    spinner = StartupAnimation(f"Starting {spec.display_name}...")
     try:
         binary_path = resolve_client_binary(
             binary_name=spec.binary_name,

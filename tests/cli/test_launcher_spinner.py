@@ -24,7 +24,7 @@ def _describe_spinner(monkeypatch, order, created):
     instance.stop.side_effect = lambda *args: order.append("stop")
     monkeypatch.setattr(
         runner,
-        "StartupSpinner",
+        "StartupAnimation",
         lambda message: (created.append(message), instance)[1],
     )
     return instance
