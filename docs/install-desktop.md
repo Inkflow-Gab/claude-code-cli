@@ -20,7 +20,40 @@ installer with `sudo`.
 
 <a id="ubuntu-install"></a>
 
-## Ubuntu or Debian: Git + Make (recommended)
+## Ubuntu or Debian: guided all-in-one path (recommended)
+
+Install prerequisites, then clone the repository. Run each block separately:
+
+```bash
+sudo apt-get update
+```
+
+```bash
+sudo apt-get install -y ca-certificates curl git
+```
+
+```bash
+git clone https://github.com/Inkflow-Gab/claude-code-cli.git
+```
+
+```bash
+cd claude-code-cli
+```
+
+```bash
+sh scripts/install.sh --guided
+```
+
+Choose one agent; the installer shows live steps, installs and verifies the
+core and agent, then offers to start `fcc-server`. If you accept, leave that
+terminal open and finish provider/key and model setup in the local Admin UI
+(normally `http://127.0.0.1:8082/admin`). Open a second terminal and run
+`nullx` from any directory, then select your coding agent. For scripts or
+headless use, pass `--guided --agent codex`: this never starts a server
+without a terminal. While this PR is unmerged, add `--from-checkout` to
+install this checkout rather than GitHub `main`.
+
+## Ubuntu or Debian: Git + Make (alternative)
 
 1. Refresh your package list:
 
@@ -91,11 +124,13 @@ retrying; never run a stale copy by accident.
 curl -fL --progress-bar -o fcc-install.sh "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh"
 ```
 
-Install FCC and one agent (replace `codex` if desired):
+Install FCC and choose one agent, then optionally start the server and Admin:
 
 ```bash
-sh fcc-install.sh --agent codex
+sh fcc-install.sh --guided
 ```
+
+For automation, pass `--guided --agent codex` instead (no server is started).
 
 The installer shows actual download progress when run in a terminal. Open a
 new terminal to pick up your updated PATH, then check the version:
@@ -104,8 +139,9 @@ new terminal to pick up your updated PATH, then check the version:
 fcc-server --version
 ```
 
-This installer uses `uv` to install the **published** `free-claude-code`
-package, not the Git checkout as an editable Python package. Use
+This installer uses `uv` to install **this fork's GitHub `main`** version of
+the `free-claude-code` package, not an unrelated published build. A downloaded
+installer cannot use `--from-checkout`; the checked-out script can. Use
 `sh fcc-install.sh --help` for additional options such as local voice support.
 
 ## Windows: PowerShell

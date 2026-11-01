@@ -34,6 +34,12 @@ install_muse=1
 install_aider=1
 enable_rtk=0
 selected_agent=""
+guided=0
+from_checkout=0
+checkout_root=""
+step_started=""
+step_label=""
+install_started=$(date +%s 2>/dev/null || printf '0')
 torch_backend=""
 temporary_file=""
 temporary_binary=""
@@ -51,6 +57,11 @@ Options:
   --agent NAME             Install one coding agent without the selection prompts.
                            Choices: claude, codex, pi, opencode, cline, hermes,
                            dsh, grok, muse, aider.
+  --guided                 One-agent install with live steps; offer to start the
+                           local server and guided Admin setup afterward.
+                           Non-interactive use requires --agent and never starts a server.
+  --from-checkout          Install this script's local checkout, not GitHub main.
+                           Useful to try unmerged changes; requires the repo.
   --voice-local            Install local Whisper voice transcription support.
   --torch-backend VALUE    Use a uv PyTorch backend, such as cu130. Requires local voice.
   --rtk                    Install and configure RTK for the selected coding agents.
@@ -61,6 +72,9 @@ USAGE
 
 fail() {
     printf 'error: %s\n' "$*" >&2
+    if [ -n "$step_label" ]; then
+        printf 'Stopped during: %s. Fix the error, then rerun the same install command.\n' "$step_label" >&2
+    fi
     exit 1
 }
 
@@ -220,7 +234,76 @@ choose_coding_agents() {
 }
 
 step() {
-    printf '\n==> %s\n' "$1"
+    now=$(date +%s 2>/dev/null || printf '0')
+    if [ -n "$step_started" ] && [ "$now" -ge "$step_started" ]; then
+        printf '    Done: %s (%ss)\n' "$step_label" "$((now - step_started))"
+    fi
+    step_started=$now
+    step_label=$1
+    if [ -t 1 ] && [ -z "${NO_COLOR+x}" ] && [ "${TERM:-dumb}" != dumb ]; then
+        printf '\n\033[38;5;45m==>\033[0m \033[38;5;111m%s\033[0m\n' "$1"
+    else
+        printf '\n==> %s\n' "$1"
+    fi
+}
+
+finish_steps() {
+    now=$(date +%s 2>/dev/null || printf '0')
+    if [ -n "$step_started" ] && [ "$now" -ge "$step_started" ]; then
+        printf '    Done: %s (%ss)\n' "$step_label" "$((now - step_started))"
+    fi
+    if [ "$now" -ge "$install_started" ]; then
+        printf '\nInstallation steps completed in %ss.\n' "$((now - install_started))"
+    fi
+}
+
+choose_one_agent() {
+    exec 3</dev/tty 4>/dev/tty
+    printf '\nChoose one coding agent for this installation:\n' >&4
+    printf '  1) Codex (default)    2) Claude Code    3) Pi\n' >&4
+    printf '  4) OpenCode           5) Cline          6) Hermes\n' >&4
+    printf '  7) DeepSeek Harness   8) Grok           9) Muse   10) Aider\n' >&4
+    while :; do
+        printf 'Agent [1-10, Enter=Codex, q=quit]: ' >&4
+        if ! IFS= read -r answer <&3; then
+            fail "Could not read your agent choice."
+        fi
+        case "$answer" in
+            ''|1) selected_agent=codex; break ;;
+            2) selected_agent=claude; break ;;
+            3) selected_agent=pi; break ;;
+            4) selected_agent=opencode; break ;;
+            5) selected_agent=cline; break ;;
+            6) selected_agent=hermes; break ;;
+            7) selected_agent=dsh; break ;;
+            8) selected_agent=grok; break ;;
+            9) selected_agent=muse; break ;;
+            10) selected_agent=aider; break ;;
+            q|Q) printf 'Installation cancelled.\n' >&4; exit 0 ;;
+            *) printf 'Choose a number from 1 to 10, or q.\n' >&4 ;;
+        esac
+    done
+    printf 'Selected: %s\n' "$selected_agent" >&4
+    exec 3<&- 4>&-
+}
+
+start_guided_server() {
+    [ "$guided" -eq 1 ] && [ "$dry_run" -eq 0 ] && installer_is_interactive || return 0
+    exec 3</dev/tty 4>/dev/tty
+    if prompt_yes_no "Start the local server and open Admin setup now?" yes; then
+        exec 3<&- 4>&-
+        printf '\nStarting the local server. Keep this terminal open; press Ctrl+C to stop.\n'
+        printf 'If no browser opens, use the local Admin URL printed by the server.\n'
+        if "$tool_bin/fcc-server"; then
+            :
+        else
+            status=$?
+            fail "Local server exited with status $status. Restart it with fcc-server after fixing the error."
+        fi
+    else
+        exec 3<&- 4>&-
+        printf 'Start later from any directory with: fcc-server\n'
+    fi
 }
 
 quote_arg() {
@@ -1304,6 +1387,12 @@ parse_args() {
                 selected_agent=${1#*=}
                 [ -n "$selected_agent" ] || fail "--agent requires a name."
                 ;;
+            --guided)
+                guided=1
+                ;;
+            --from-checkout)
+                from_checkout=1
+                ;;
             --voice-local)
                 voice_local=1
                 ;;
@@ -1337,6 +1426,16 @@ parse_args() {
 }
 
 validate_args() {
+    if [ "$from_checkout" -eq 1 ]; then
+        [ -f "$0" ] || fail "--from-checkout requires running scripts/install.sh from a checkout."
+        checkout_root=$(CDPATH= cd -P "$(dirname "$0")/.." && pwd) || fail "Cannot locate checkout."
+        [ -f "$checkout_root/pyproject.toml" ] &&
+            [ -f "$checkout_root/src/free_claude_code/cli/nullx.py" ] ||
+            fail "--from-checkout requires the Nullx11 Code checkout (including nullx.py)."
+    fi
+    if [ "$guided" -eq 1 ] && [ -z "$selected_agent" ] && ! installer_is_interactive; then
+        fail "--guided needs a terminal to choose an agent; add --agent codex for non-interactive use."
+    fi
     if [ -n "$torch_backend" ] && [ "$voice_local" -ne 1 ]; then
         fail "--torch-backend requires --voice-local."
     fi
@@ -1369,8 +1468,17 @@ validate_args() {
 }
 
 package_spec() {
-    # Install this fork's main branch, not an unrelated published FCC build.
-    # hatch-vcs embeds its Git revision so nullx can compare it to main later.
+    # A checkout build includes unmerged changes; the hosted installer uses main.
+    # Neither path downloads an unrelated FCC distribution from PyPI.
+    if [ "$from_checkout" -eq 1 ]; then
+        if [ "$voice_local" -eq 1 ]; then
+            printf '%s' "$checkout_root[voice_local]"
+        else
+            printf '%s' "$checkout_root"
+        fi
+        return 0
+    fi
+    # hatch-vcs embeds Git revision so nullx can compare it to main later.
     if [ "$voice_local" -eq 1 ]; then
         printf '%s' 'free-claude-code[voice_local] @ git+https://github.com/Inkflow-Gab/claude-code-cli.git@main'
     else
@@ -1498,6 +1606,9 @@ PLIST
 }
 
 parse_args "$@"
+if [ "$guided" -eq 1 ] && [ -z "$selected_agent" ] && installer_is_interactive; then
+    choose_one_agent
+fi
 validate_args
 # Preserve the user's winning command before adding installer search paths.
 original_opencode_path=$(command -v opencode || true)
@@ -1559,6 +1670,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
     install_macos_desktop_app
 fi
 
+finish_steps
 if [ "$dry_run" -eq 1 ]; then
     printf '\nDry run complete. No changes were made.\n'
 else
@@ -1611,4 +1723,5 @@ else
     else
         printf 'The fcc-aider wrapper is ready after you install Aider.\n'
     fi
+    start_guided_server
 fi

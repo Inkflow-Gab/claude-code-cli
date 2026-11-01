@@ -36,7 +36,7 @@ sudo apt-get update
 ```
 
 ```bash
-sudo apt-get install -y ca-certificates git make
+sudo apt-get install -y ca-certificates curl git make
 ```
 
 ```bash
@@ -47,32 +47,41 @@ git clone https://github.com/Inkflow-Gab/claude-code-cli.git
 cd claude-code-cli
 ```
 
-```bash
-make setup AGENT=codex
-```
+Run the **guided, all-in-one installer**. It asks you to choose one coding
+agent, shows live steps and actual download progress, installs and checks
+Nullx11 Code, then offers to start the server and open local Admin setup:
 
 ```bash
-make check AGENT=codex
+sh scripts/install.sh --guided
 ```
 
-Start the server and **leave this terminal open**:
+When asked, choose an agent (Enter selects Codex). Keep the first terminal
+open if you start the server. On a computer, Admin normally opens at
+`http://127.0.0.1:8082/admin`; there, add your own [provider](docs/providers.md)
+key, pick a model, and click **Apply**. Credentials are never entered into the
+installer. In a **second terminal**, from any project directory, run:
 
 ```bash
-make run
+nullx
 ```
 
-Open the Admin URL printed by the server (normally
-`http://127.0.0.1:8082/admin`) **on that computer**. Add a
-[provider](docs/providers.md) key/account, select a model, and click **Apply**.
-In a **second terminal**, open your project directory and run:
+Choose **Coding agent CLI**, then your installed agent. You can still run
+`fcc-codex` directly. For an unattended install, specify an agent; this
+installs and verifies but does not launch a server:
 
 ```bash
-fcc-codex
+sh scripts/install.sh --guided --agent codex
 ```
 
-Use the same agent throughout: replace `codex` with `claude` or another
-[supported agent](docs/agents.md) if you prefer. [Full Linux instructions,
-curl alternative, and troubleshooting →](docs/install-desktop.md)
+You can also use `make setup AGENT=codex`, `make check AGENT=codex`, and
+`make run` separately. Before this PR merges, use `--from-checkout` to install
+the local branch rather than the older GitHub `main`:
+
+```bash
+sh scripts/install.sh --guided --from-checkout
+```
+
+[Full Linux instructions, curl alternative, and troubleshooting →](docs/install-desktop.md)
 
 ### Choose a mode with `nullx`
 
@@ -83,13 +92,10 @@ After installing the current Nullx11 Code build from this fork, run this
 nullx
 ```
 
-The installer installs this fork's `main` branch, so the menu is available
-through the installer **after these changes reach `main`**. To try this checkout
-before then, run the following from its directory (with uv installed):
-
-```bash
-uv tool install --force --python 3.14.7 .
-```
+The hosted installer installs this fork's `main` branch. To try this checkout
+before these changes merge, use `sh scripts/install.sh --guided --from-checkout`
+from the checkout as shown above. This uses the same guided installation and
+verifies the `nullx` command.
 
 Afterward, `nullx` runs from anywhere. Reopen your terminal after installation
 if your updated uv tool PATH has not taken effect yet.
