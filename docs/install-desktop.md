@@ -50,14 +50,21 @@ git status --short
 git branch --show-current
 ```
 
-If the checkout is clean and on `main`, refresh it without discarding work:
+```bash
+git remote get-url origin
+```
+
+Only pull if the remote points to `Inkflow-Gab/claude-code-cli`, the checkout is
+clean, and the branch is `main`. Otherwise use the fresh-installer fallback in
+the README without altering your checkout. Refresh without discarding work:
 
 ```bash
 git pull --ff-only origin main
 ```
 
-Stop if that fails; do not force-reset local changes. Confirm the updated
-script lists `--guided`:
+Stop if that fails; do not force-reset local changes. For a diverged or dirty
+checkout, follow the [fresh-installer fallback in the main README](../README.md#linux-ubuntu--debian)
+instead of running its old script. Confirm the updated script lists `--guided`:
 
 ```bash
 sh scripts/install.sh --help

@@ -69,6 +69,13 @@ git status --short
 git branch --show-current
 ```
 
+```sh
+git remote get-url origin
+```
+
+The remote must be `https://github.com/Inkflow-Gab/claude-code-cli.git`
+(or its SSH equivalent), not an upstream or unrelated fork. If it is different,
+use the fresh-installer fallback below instead of pulling from that remote.
 If there are no local edits and the branch output is `main`, update it safely.
 If it is blank, this may be a detached checkout from older instructions:
 `git switch main` is appropriate only after preserving your work. If it names
@@ -87,9 +94,32 @@ sh scripts/install.sh --help
 ```
 
 Look for `--guided` in the output. Merely updating the installed FCC package
-will not update scripts in an older checkout. This is an experimental on-device
-install: proot may lack compatible Python or coding-agent ARM64 builds.
-Preview the single-agent install without network changes:
+will not update scripts in an older checkout. If the pull cannot safely
+fast-forward, **leave your checkout untouched** and download the current
+installer to your home directory instead:
+
+```sh
+curl -fL --retry 3 -o "$HOME/nullx-main-install.sh" "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh"
+```
+
+Run the next steps **only if curl succeeded**:
+
+```sh
+sh -n "$HOME/nullx-main-install.sh"
+```
+
+```sh
+grep -q -- '--guided)' "$HOME/nullx-main-install.sh"
+```
+
+```sh
+sh "$HOME/nullx-main-install.sh" --guided --agent codex
+```
+
+Do not then run the old `scripts/install.sh` from your clone; it is still old.
+This is an experimental on-device install: proot may lack compatible Python
+or coding-agent ARM64 builds. For an updated checkout, preview the single-agent
+install without network changes:
 
 ```sh
 sh scripts/install.sh --dry-run --agent codex

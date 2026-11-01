@@ -58,7 +58,14 @@ git status --short
 git branch --show-current
 ```
 
-If status prints nothing and the branch says `main`, update without creating a
+```bash
+git remote get-url origin
+```
+
+The remote must be `https://github.com/Inkflow-Gab/claude-code-cli.git`
+(or its SSH equivalent). If it points elsewhere, skip the pull and use the
+fresh-installer fallback below instead. If status prints nothing and the branch
+says `main`, update without creating a
 merge commit. If the branch name is blank, you are detached (possibly from
 older PR instructions); preserve your work before switching back to `main`.
 If it shows a different branch, stop rather than updating the wrong branch:
@@ -77,7 +84,25 @@ sh scripts/install.sh --help
 
 If `--guided` is missing, you are still executing an old local script. The
 installed package cannot change the script inside an old clone until you
-update that clone.
+update that clone. **If your checkout cannot fast-forward**, you can install
+without altering it: download the current installer from this fork's `main`
+to your home directory, review it, and only run it if the download succeeds:
+
+```bash
+curl -fL --retry 3 --output "$HOME/nullx-main-install.sh" "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh"
+```
+
+```bash
+sh -n "$HOME/nullx-main-install.sh" && grep -q -- '--guided)' "$HOME/nullx-main-install.sh"
+```
+
+```bash
+sh "$HOME/nullx-main-install.sh" --guided
+```
+
+The new `scripts/setup.sh` automates this safe download, syntax/feature check,
+and temporary-file cleanup; once it is on `main`, you can use its copy in a
+fresh checkout. Neither method rewrites your old Git checkout.
 
 Run the **guided, all-in-one installer**. It asks you to choose one coding
 agent, shows live steps and actual download progress, installs and checks
