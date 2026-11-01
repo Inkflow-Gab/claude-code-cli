@@ -33,6 +33,7 @@ install_grok=1
 install_muse=1
 install_aider=1
 enable_rtk=0
+selected_agent=""
 torch_backend=""
 temporary_file=""
 temporary_binary=""
@@ -47,6 +48,9 @@ Usage: install.sh [options]
 Installs or updates Free Claude Code and lets you choose which coding agents to install or verify.
 
 Options:
+  --agent NAME             Install one coding agent without the selection prompts.
+                           Choices: claude, codex, pi, opencode, cline, hermes,
+                           dsh, grok, muse, aider.
   --voice-local            Install local Whisper voice transcription support.
   --torch-backend VALUE    Use a uv PyTorch backend, such as cu130. Requires local voice.
   --rtk                    Install and configure RTK for the selected coding agents.
@@ -442,6 +446,22 @@ require_command() {
     fi
 }
 
+download_file() {
+    download_url=$1
+    download_destination=$2
+    download_label=$3
+    printf 'Downloading %s...\n' "$download_label"
+    # curl's progress bar reflects actual transfer progress. CI and redirected
+    # output stay quiet; upstream installers keep their own output visible.
+    if [ -t 2 ]; then
+        print_command curl -fL --progress-bar "$download_url" -o "$download_destination"
+        curl -fL --progress-bar "$download_url" -o "$download_destination"
+    else
+        print_command curl -fsSL "$download_url" -o "$download_destination"
+        curl -fsSL "$download_url" -o "$download_destination"
+    fi
+}
+
 download_and_run() {
     url=$1
     interpreter=$2
@@ -471,8 +491,7 @@ download_and_run() {
     fi
 
     temporary_file=$(mktemp "${TMPDIR:-/tmp}/fcc-install.XXXXXX") || fail "Unable to create a temporary file for $label."
-    print_command curl -fsSL "$url" -o "$temporary_file"
-    if curl -fsSL "$url" -o "$temporary_file"; then
+    if download_file "$url" "$temporary_file" "$label"; then
         :
     else
         status=$?
@@ -608,8 +627,7 @@ install_rtk() {
 
     [ -n "${HOME:-}" ] || fail "HOME is required to install RTK."
     temporary_file=$(mktemp "${TMPDIR:-/tmp}/fcc-rtk.XXXXXX") || fail "Unable to create a temporary RTK archive."
-    print_command curl -fsSL "$rtk_archive_url" -o "$temporary_file"
-    if curl -fsSL "$rtk_archive_url" -o "$temporary_file"; then
+    if download_file "$rtk_archive_url" "$temporary_file" "RTK $RTK_VERSION"; then
         :
     else
         status=$?
@@ -1317,6 +1335,18 @@ ensure_uv() {
 parse_args() {
     while [ "$#" -gt 0 ]; do
         case "$1" in
+            --agent)
+                shift
+                [ "$#" -gt 0 ] || fail "--agent requires a name."
+                [ -z "$selected_agent" ] || fail "--agent may only be supplied once."
+                selected_agent=$1
+                [ -n "$selected_agent" ] || fail "--agent requires a name."
+                ;;
+            --agent=*)
+                [ -z "$selected_agent" ] || fail "--agent may only be supplied once."
+                selected_agent=${1#*=}
+                [ -n "$selected_agent" ] || fail "--agent requires a name."
+                ;;
             --voice-local)
                 voice_local=1
                 ;;
@@ -1353,6 +1383,32 @@ validate_args() {
     if [ -n "$torch_backend" ] && [ "$voice_local" -ne 1 ]; then
         fail "--torch-backend requires --voice-local."
     fi
+    [ -n "$selected_agent" ] || return 0
+
+    # Do not install every agent when a single-agent setup was requested.
+    install_claude=0
+    install_codex=0
+    install_pi=0
+    install_opencode=0
+    install_cline=0
+    install_hermes=0
+    install_dsh=0
+    install_grok=0
+    install_muse=0
+    install_aider=0
+    case "$selected_agent" in
+        claude) install_claude=1 ;;
+        codex) install_codex=1 ;;
+        pi) install_pi=1 ;;
+        opencode) install_opencode=1 ;;
+        cline) install_cline=1 ;;
+        hermes) install_hermes=1 ;;
+        dsh) install_dsh=1 ;;
+        grok) install_grok=1 ;;
+        muse) install_muse=1 ;;
+        aider) install_aider=1 ;;
+        *) fail "unknown agent: $selected_agent (see --help for choices)." ;;
+    esac
 }
 
 package_spec() {
@@ -1487,16 +1543,18 @@ validate_args
 # Preserve the user's winning command before adding installer search paths.
 original_opencode_path=$(command -v opencode || true)
 add_known_bin_directories
-if command -v cline >/dev/null 2>&1 || command -v npm >/dev/null 2>&1; then
-    install_cline=1
-fi
-if ! command -v hermes >/dev/null 2>&1 && ! hermes_platform_is_supported; then
-    install_hermes=0
+if [ -z "$selected_agent" ]; then
+    if command -v cline >/dev/null 2>&1 || command -v npm >/dev/null 2>&1; then
+        install_cline=1
+    fi
+    if ! command -v hermes >/dev/null 2>&1 && ! hermes_platform_is_supported; then
+        install_hermes=0
+    fi
 fi
 step "Checking for running Free Claude Code processes"
 assert_no_fcc_processes_running
 
-if ! installer_is_interactive && ! command -v dsh >/dev/null 2>&1; then
+if [ -z "$selected_agent" ] && ! installer_is_interactive && ! command -v dsh >/dev/null 2>&1; then
     if [ "$dry_run" -eq 1 ] && command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
         install_dsh=1
     elif ! dsh_toolchain_is_supported; then
@@ -1504,7 +1562,7 @@ if ! installer_is_interactive && ! command -v dsh >/dev/null 2>&1; then
     fi
 fi
 
-if installer_is_interactive; then
+if [ -z "$selected_agent" ] && installer_is_interactive; then
     step "Choosing coding agents"
     choose_coding_agents /dev/tty /dev/tty
 fi

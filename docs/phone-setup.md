@@ -10,25 +10,30 @@ real files.
                              <──────────────── results  <──   (edits real files)
 ```
 
-Takes about five minutes. Telegram is the easier default.
+Telegram is the easier default. This guide uses an **Ubuntu computer or server**
+as the host; Android or iPhone only needs the Telegram/Discord app. It does not
+install FCC on the phone.
 
 ---
 
 ## What you need
 
-- Your computer, with FCC installed and a provider key configured
+- An Ubuntu computer with FCC installed, a working coding agent, and a provider
+  key configured (see [Ubuntu quick start](../README.md#ubuntu-and-phone-setup))
 - A Telegram or Discord account
 - This guide
 
 ---
 
-## Step 0. Install FCC (skip if already installed)
+## Step 0. Install FCC on Ubuntu (skip if already installed)
 
-macOS / Linux:
+For Ubuntu, use the [copyable `git clone` and `make setup AGENT=codex` steps](../README.md#ubuntu-and-phone-setup),
+or use the [curl download method](../README.md#install) if you do not want to
+clone. The installer runs on the Ubuntu host, **not** the phone. Termux/proot
+Ubuntu on Android is not supported: the pinned Python and agent binaries may
+not be available there.
 
-```bash
-curl -fsSL "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh" | sh
-```
+For macOS/Linux, use the same [curl download method](../README.md#install).
 
 Windows PowerShell:
 
@@ -36,8 +41,9 @@ Windows PowerShell:
 & ([scriptblock]::Create((irm "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.ps1")))
 ```
 
-When prompted, choose **at least one coding agent** (Claude Code, Codex, etc.).
-Messaging works with any of them.
+The Ubuntu and curl examples install Codex by default; change `AGENT=codex`
+(or `--agent codex`) if you prefer another coding agent. Messaging works with
+any supported agent. The Windows installer prompts you to select one.
 
 Check it installed:
 
@@ -56,10 +62,20 @@ fcc-server
 ```
 
 Your phone is only a remote control. If this stops, the bot stops responding.
+Open Admin on the Ubuntu machine using the URL in the log (normally
+`http://127.0.0.1:8082/admin`). Admin is local-only: a phone browser pointed
+at the Ubuntu machine's IP will not be allowed in. Configure it on the host,
+then use Telegram or Discord from the phone. Do not open/forward port 8082 to
+the internet.
 
 ---
 
-## Step 2a. Create a Telegram bot
+## Step 2. Create a bot (choose Telegram **or** Discord)
+
+Telegram is simplest for a private chat. If you choose Telegram, do Step 2a
+and use Option A in Step 4; for Discord, use Step 2b and Option B instead.
+
+### Step 2a. Telegram
 
 Copy this command into your Telegram chat with [@BotFather](https://t.me/BotFather):
 
@@ -81,7 +97,7 @@ Copy that token. You need it in Step 4.
 
 ---
 
-## Step 2b. Create a Discord bot
+### Step 2b. Discord
 
 1. Open the [Discord Developer Portal](https://discord.com/developers/applications)
 2. Click **New Application**, name it, and click **Create**
@@ -94,6 +110,12 @@ Now turn on the permission the bot needs:
 6. Enable **MESSAGE CONTENT INTENT**
 
 If you skip this step the bot connects but ignores everything you send.
+
+7. Open **OAuth2 → URL Generator** in the Developer Portal, select the `bot`
+   scope, and grant **View Channels**, **Send Messages**, **Read Message History**,
+   and **Manage Messages** (needed for `/clear`). Open the generated URL and
+   invite the bot to a server you administer. Ensure it can see the channel you
+   will allow in Step 4. Never paste the bot token into the invite URL.
 
 ---
 
@@ -200,17 +222,21 @@ agent works on it.
 
 ### Option B: Local Whisper on your own machine
 
-Re-run the installer with local voice support:
+Stop `fcc-server` first. From your cloned repository, re-run the installer
+with local voice support (change `codex` if you installed a different agent):
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh" | sh -s -- --voice-local
+sh scripts/install.sh --agent codex --voice-local
 ```
 
-For an NVIDIA GPU:
+For an NVIDIA GPU on Ubuntu:
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh" | sh -s -- --voice-local --torch-backend cu130
+sh scripts/install.sh --agent codex --voice-local --torch-backend cu130
 ```
+
+If you used curl instead of Git, run these commands against the downloaded
+`fcc-install.sh` file instead of `scripts/install.sh`.
 
 Then restart `fcc-server`, and in **Messaging → Voice** choose `cpu` or `cuda`.
 
@@ -237,11 +263,19 @@ restart the bot.
 
 **Nothing happens, no error**
 The bot is receiving your message but the agent cannot run. Check
-**Messaging → Voice** and your provider key, then run the diagnostic:
+**Messaging** settings, the selected coding agent, and your provider key, then run the diagnostic:
 
 ```bash
 fcc-doctor
 ```
+
+**`fcc-server: command not found` on Ubuntu**
+Open a new terminal, or run `export PATH="$HOME/.local/bin:$PATH"` and retry.
+The installer verifies that `fcc-server` is installed before it exits.
+
+**The bot stops answering when the phone screen turns off**
+FCC must keep running on the Ubuntu host, not on the phone. Check the Ubuntu
+terminal and network connection; don't close the terminal running `fcc-server`.
 
 **Rate limits or "FloodWait" errors**
 Telegram and Discord both throttle. FCC pauses automatically, but if you hit
@@ -265,4 +299,4 @@ in **Messaging**.
 ## See also
 
 - [Main README](../README.md) for provider setup
-- [Admin UI](../README.md#3-configure-nvidia-nim) for the full settings list
+- [Provider setup](../README.md#choose-a-provider) and [integrations](../README.md#optional-integrations)

@@ -15,7 +15,7 @@
 [![Formatter: Ruff](https://img.shields.io/badge/Formatter-ruff-bf4b00.svg?style=for-the-badge)](https://github.com/astral-sh/ruff)
 [![Logging: Loguru](https://img.shields.io/badge/logging-loguru-00695c.svg?style=for-the-badge)](https://github.com/Delgan/loguru)
 
-[Quick Start](#quick-start) · [Providers](#choose-a-provider) · [Clients](#connect-your-client) · [Integrations](#optional-integrations) · [Manage](#manage-your-installation)
+[Start here](#quick-start) · [Ubuntu & phone](#ubuntu-and-phone-setup) · [Agents](docs/agents.md) · [Providers](#choose-a-provider) · [Integrations](#optional-integrations) · [Help](#troubleshooting)
 
 </div>
 
@@ -30,177 +30,213 @@
 > `https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.sh`.
 > See [Credits](#credits) below.
 
-## What You Get
+## Free Claude Code at a glance
 
-- **59 ToS-friendly providers. 1.3B+ free tokens every month.** Use free, paid, subscription, and local models from one searchable UI without putting your account at risk. FCC follows provider terms and removes integrations if they stop being allowed.
-- **11 coding agents. One model catalog.** Run [Claude Code](https://code.claude.com/docs/en/overview), [Codex](https://github.com/openai/codex), [Pi](https://github.com/earendil-works/pi), [OpenCode](https://github.com/anomalyco/opencode), [Cline](https://github.com/cline/cline), [Hermes](https://github.com/NousResearch/hermes-agent), [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness), [Grok Build](https://github.com/xai-org/grok-build), [Muse Code](https://research.meta.ai/blog/introducing-muse-code-and-muse-spark-1-2/), [Aider](https://aider.chat/), or [VS Code Chat](https://code.visualstudio.com/) with your FCC models.
-- **Keep coding through provider outages.** After retries are exhausted, FCC automatically tries your next configured model without making you restart the turn. This works across every client.
-- **Up to 90% fewer terminal-output tokens.** Optional [RTK](https://github.com/rtk-ai/rtk) filters common command output, while five FCC optimizations handle quota probes, command-prefix detection, titles, suggestions, and filepaths without calling a provider.
-- **Native Code sessions in your browser.** Choose a folder and run Codex in the browser with real-time and background support. Freely switch providers/models in the same session. Support for switching harnesses in the same session coming soon!
-- **Terminal, desktop, IDE, or phone.** Work through native launchers, [VS Code](https://code.visualstudio.com/), [Codex App](https://learn.chatgpt.com/docs/app), [JetBrains](https://www.jetbrains.com/), [Discord](https://discord.com/), or [Telegram](https://telegram.org/).
-- **Voice notes in. Code out.** Talk to your agent using local [Whisper](https://github.com/openai/whisper) or [NVIDIA NIM](https://docs.nvidia.com/nim/speech/latest/asr/deploy-asr-models/whisper.html) transcription.
-- **Agent capabilities stay intact.** Stream responses, use tools, preserve native interleaved thinking for maximum performance, send images, and route [Fable](https://www.anthropic.com/claude/fable), [Opus](https://www.anthropic.com/claude/opus), [Sonnet](https://www.anthropic.com/claude/sonnet), and [Haiku](https://www.anthropic.com/claude/haiku) independently with compatible models.
+Free Claude Code (FCC) runs a **local proxy** between coding agents and model
+providers. Choose a coding agent, configure a provider you have access to, and
+use the `fcc-*` launchers to route requests through FCC. Provider free tiers
+and quotas are controlled by their operators; FCC does not grant free Claude
+Code or Anthropic credits. You may need a provider API key or subscription.
 
-Free-tier availability and limits are controlled by each provider and may change.
-
-<div align="center">
-  <img src="assets/pic.png" alt="Claude Code running with Free Claude Code" width="700">
-  <p><em>Claude Code running with FCC.</em></p>
-</div>
-
-<div align="center">
-  <img src="assets/browser-code-session.png" alt="Native Codex browser session in FCC, showing model controls and a repository exploration" width="700">
-  <p><em>A native Codex session in FCC's browser UI.</em></p>
-</div>
+- Run [Claude Code, Codex, Pi and other agents](docs/agents.md) with a shared
+  model catalog. FCC also supports browser Code Sessions and client integrations.
+- Choose among [hosted, subscription and local providers](#choose-a-provider),
+  with optional fallback models. Check each provider's current terms and limits.
+- Code from an Ubuntu host or [control it from your phone](docs/phone-setup.md)
+  using Telegram or Discord. The server and project files remain on the host.
+- Optional voice notes, desktop integrations and RTK are documented below.
 
 ## Quick Start
+
+Choose **one** path. Run commands on the computer hosting FCC, not on the phone.
+Do not run the installer with `sudo`: only the Ubuntu package prerequisites
+need elevated privileges. [Review the shell installer](scripts/install.sh) before
+running downloaded code.
 
 <a id="install"></a>
 
 ### 1. Install
 
-macOS/Linux:
+**Ubuntu with Git + Make (recommended).** Run each command separately,
+in order, on the Ubuntu host. Wait for one to finish successfully before
+copying the next; do not paste the whole section at once.
+
+1. Refresh Ubuntu's package list:
+
+   ```bash
+   sudo apt-get update
+   ```
+
+2. Install the tools needed to get the project:
+
+   ```bash
+   sudo apt-get install -y ca-certificates git make
+   ```
+
+3. Clone this repository:
+
+   ```bash
+   git clone https://github.com/Inkflow-Gab/claude-code-cli.git
+   ```
+
+4. Enter the repository:
+
+   ```bash
+   cd claude-code-cli
+   ```
+
+5. Optionally preview the installation without making changes:
+
+   ```bash
+   make preview-install AGENT=codex
+   ```
+
+6. Install curl, Free Claude Code, and Codex. This step asks for `sudo` only
+   for Ubuntu packages. **Do not run Make or the FCC installer with `sudo`.**
+
+   ```bash
+   make setup AGENT=codex
+   ```
+
+7. Verify the installed FCC and selected agent commands:
+
+   ```bash
+   make check AGENT=codex
+   ```
+
+Change `codex` in steps 5–7 to the same other agent (`claude`, `pi`, etc.)
+if you prefer. See `sh scripts/install.sh --help` for names. `make install
+AGENT=codex` skips Ubuntu packages if curl is already installed. `make install`
+without an agent opens the full selection menu **in an interactive terminal**;
+non-interactive Make installs require `AGENT`. The Make commands add uv's user
+bin directory to PATH without requiring a new terminal. Ubuntu running
+*inside Android* (Termux/proot) is not supported: Python and agent binaries
+may not be available.
+
+**macOS/Linux using curl instead of Git.** On minimal Ubuntu, install curl first:
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh" | sh
+sudo apt-get update
 ```
 
-Windows PowerShell:
+```bash
+sudo apt-get install -y ca-certificates curl
+```
+
+Download the installer and **continue only if curl succeeds**:
+
+```bash
+curl -fL --progress-bar -o fcc-install.sh "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh"
+```
+
+Review the file if you wish, then install FCC with one agent:
+
+```bash
+sh fcc-install.sh --agent codex
+```
+
+If the download failed, do **not** run an old or incomplete `fcc-install.sh`;
+remove it and retry. `--agent` avoids the long selection menu (omit it to
+choose interactively). The installer displays real download progress on a
+terminal and installs the published `free-claude-code` package with uv, not an
+editable Python checkout. Open a new terminal after installation, then verify:
+
+```bash
+fcc-server --version
+```
+
+**Windows PowerShell:**
 
 ```powershell
 & ([scriptblock]::Create((irm "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.ps1")))
 ```
 
-When prompted, choose at least one coding agent and optionally RTK. You can review the installers before running them: [install.sh](scripts/install.sh) and [install.ps1](scripts/install.ps1).
+### 2. Start the server
 
-### 2. Start FCC
+On Ubuntu/Linux, start FCC from the clone:
 
-#### Windows
+```bash
+make run
+```
 
-Open **Free Claude Code** from your desktop or Start menu.
-
-#### macOS
-
-Open **Free Claude Code** from your desktop or Applications folder.
-
-#### Linux
-
-Run:
+If you installed with curl, or are on macOS, run:
 
 ```bash
 fcc-server
 ```
 
-FCC opens the Admin UI after starting. On Windows and macOS, use the tray or
-menu-bar icon to open Admin, restart, or quit. When using `fcc-server`, keep its
-terminal open.
+On Windows/macOS you can also open the Free Claude Code app. Keep the server
+terminal open. Admin is available **only on the host** at the URL
+shown in its log (normally `http://127.0.0.1:8082/admin`). Do not expose Admin
+to the internet. On a headless server, tunnel from a trusted computer with
+`ssh -L 18082:127.0.0.1:8082 user@your-ubuntu-host`, then open
+`http://127.0.0.1:18082/admin` on that computer.
 
-<a id="nvidia-nim-provider"></a>
-
-### 3. Configure NVIDIA NIM
-
-1. Create an API key at [build.nvidia.com/settings/api-keys](https://build.nvidia.com/settings/api-keys).
-2. Open the Admin UI URL from the server log.
-3. Paste the key into `NVIDIA_NIM_API_KEY`.
-4. Leave `MODEL` on the default `nvidia_nim/nvidia/nemotron-3-super-120b-a12b`, or search the model dropdown and select another model.
-5. Click **Apply**.
-
-To protect the local proxy with a bearer token, enable **Proxy Authentication**
-in Admin.
-
-<div align="center">
-  <img src="assets/admin-page.png" alt="Free Claude Code Admin UI" width="700">
-</div>
-
-### 4. Run Your Coding Agent
-
-Claude Code:
+From the clone, check the running server **in a second terminal**:
 
 ```bash
-fcc-claude
+make check-online AGENT=codex
 ```
 
-Codex:
+If you changed the server port, set `FCC_PORT` to that port when running the
+check. This confirms the server responds; it does
+**not** test a provider or make an AI request.
+
+<a id="nvidia-nim-provider"></a>
+<a id="3-configure-nvidia-nim"></a>
+
+### 3. Configure NVIDIA NIM (example provider)
+
+1. Get an API key at [build.nvidia.com](https://build.nvidia.com/settings/api-keys).
+2. In local Admin, enter `NVIDIA_NIM_API_KEY`. Choose a model in the `MODEL`
+   dropdown, such as `nvidia_nim/nvidia/nemotron-3-super-120b-a12b`.
+3. Click **Apply**. For other providers, see [Choose a provider](#choose-a-provider).
+
+Do not paste keys into terminal commands, public issues or screenshots. For
+extra protection of the proxy API, enable **Proxy Authentication** in Admin.
+
+### 4. Try an agent or your phone
+
+Open another terminal on the host and start Codex (if you selected Codex):
 
 ```bash
 fcc-codex
 ```
 
-Pi:
+Or start Claude Code (if you selected Claude Code):
 
 ```bash
-fcc-pi
+fcc-claude
 ```
 
-OpenCode 2:
+Then try a prompt in a project directory. The server must be running.
+Choose the same agent you installed in step 1. See [all launchers](docs/agents.md),
+[client integrations](#connect-your-client), or the
+[phone walkthrough](docs/phone-setup.md) for Telegram/Discord setup.
 
-```bash
-fcc-opencode
-```
+<a id="ubuntu-and-phone-setup"></a>
 
-To upgrade from OpenCode 1, close OpenCode and rerun the FCC installer with
-OpenCode selected. For npm or other package-manager installations, follow
-[OpenCode's migration instructions](https://opencode.ai/v2/docs/migrate-v1/)
-first. For npm v1, run `npm uninstall -g opencode-ai`, then rerun the FCC installer.
+## Ubuntu and phone setup
 
-RTK integration is temporarily unavailable for OpenCode 2. RTK continues to work
-with the other supported agents.
+For a phone, **keep FCC and your project on Ubuntu**. Install Telegram or Discord
+on the phone, configure the bot in local Admin on Ubuntu, then message it from
+the phone. No port forwarding or public Admin URL is required. Start with the
+[phone guide](docs/phone-setup.md). A phone browser cannot open the Admin UI
+by pointing it at the Ubuntu machine's LAN address; Admin is loopback-only.
 
-Use `fcc-opencode` for coding and sessions. Use plain `opencode` for commands
-such as upgrades, service management, ACP, and MCP setup.
+## Troubleshooting
 
-Cline:
+| Symptom | What to try |
+| --- | --- |
+| `curl` or `make` not found | Install prerequisites with `sudo apt-get update && sudo apt-get install -y ca-certificates curl git make`. |
+| `fcc-server` not found after install | From the clone, use `make check AGENT=codex`; for direct commands, reopen the terminal or add `~/.local/bin` (or `UV_TOOL_BIN_DIR`) to PATH. |
+| Installer refuses to update | Stop `fcc-server` and FCC clients; rerun `make install AGENT=codex`. |
+| Server check fails | Start `make run` in another terminal. If you changed `PORT`, run `FCC_PORT=<port> make check-online AGENT=codex`. |
+| Agent cannot get a response | Confirm the selected model and provider credentials in Admin; run `make doctor` after installing, or `fcc-doctor` outside the clone. |
+| Package or agent download fails | Read the upstream error; retry when connected. Some architectures do not have compatible binaries. |
 
-```bash
-fcc-cline
-```
-
-Hermes:
-
-```bash
-fcc-hermes
-```
-
-DeepSeek Harness Web:
-
-```bash
-fcc-dsh
-```
-
-For DeepSeek Harness Desktop, install and open the app once, then select **Connect** under **Integrations → DeepSeek Harness Desktop** in FCC. Keep FCC running while using its models. FCC becomes the default for new sessions. Select **Disconnect** to remove the connection. Native DeepSeek account features still need a DeepSeek login.
-
-Use DeepSeek Harness 0.2.0-rc.2 or newer. Update the CLI with:
-
-```bash
-npm install -g @deepseek-ai/dsh@latest
-```
-
-For headless tasks, run `fcc-dsh headless "your task"`. Extra `--patch` files apply after FCC's settings. After disconnecting Desktop, select another model to continue an existing FCC session. If another DSH setting uses FCC's Desktop credential, Disconnect keeps that credential and reports why.
-
-Grok Build:
-
-```bash
-fcc-grok
-```
-
-Muse Code:
-
-```bash
-fcc-muse
-```
-
-Aider:
-
-```bash
-fcc-aider
-```
-
-<a id="model-picker"></a>
-
-<div align="center">
-  <img src="assets/cc-model-picker.png" alt="Claude Code model picker showing FCC models" width="700">
-  <p><em>Select an FCC model from Claude Code's native <code>/model</code> picker.</em></p>
-</div>
+The checks never read credentials or call a model provider. For a bug report,
+`fcc-doctor` prints a diagnostic report; review it before sharing.
 
 ## Choose A Provider
 
@@ -353,6 +389,11 @@ Start `llama-server` with its OpenAI-compatible Chat Completions API and enough 
 
 ```bash
 ollama pull llama3.1
+```
+
+Then, in another terminal:
+
+```bash
 ollama serve
 ```
 
@@ -452,20 +493,18 @@ Configure integrations from **Admin UI → Messaging**, then click **Apply**.
 
 NVIDIA NIM transcription support is included in every installation. In **Admin UI → Messaging → Voice**, enable voice notes, select `nvidia_nim`, and choose a supported model. Configure your **NVIDIA NIM API key** on the Providers page.
 
-For local Whisper on CPU or CUDA, re-run the installer with the local voice option:
-
-macOS/Linux:
-
-Local Whisper on CPU or CUDA:
+For local Whisper on CPU or CUDA, stop FCC and re-run the installer (from
+the clone, or replace `scripts/install.sh` with your downloaded
+`fcc-install.sh`). Use the same agent you installed previously:
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh" | sh -s -- --voice-local
+sh scripts/install.sh --agent codex --voice-local
 ```
 
-Local Whisper with CUDA 13.0:
+For an NVIDIA GPU with CUDA 13.0:
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.sh" | sh -s -- --voice-local --torch-backend cu130
+sh scripts/install.sh --agent codex --voice-local --torch-backend cu130
 ```
 
 Windows PowerShell:
@@ -536,10 +575,16 @@ Stop every running FCC command before uninstalling.
 - uv and Python
 - Your coding agents and RTK
 
-macOS/Linux:
+macOS/Linux (review the script before running; **this deletes** `~/.fcc/`):
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/uninstall.sh" | sh
+curl -fL --progress-bar -o fcc-uninstall.sh "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/uninstall.sh"
+```
+
+If the download succeeded and you reviewed the file:
+
+```bash
+sh fcc-uninstall.sh
 ```
 
 Windows PowerShell:
