@@ -184,11 +184,13 @@ def test_admin_page_uses_installed_version(monkeypatch, tmp_path):
     response = _local_client(create_test_app()).get("/admin")
 
     assert response.status_code == 200
-    assert "<p>Server Control · v9.8.7</p>" in response.text
-    assert 'href="https://github.com/Alishahryar1/free-claude-code"' in response.text
+    assert "<title>Nullx11 Code · Setup</title>" in response.text
+    assert "<h1>Nullx11 Code</h1>" in response.text
+    assert "<p>Powered by Free Claude Code · v9.8.7</p>" in response.text
+    assert 'href="https://github.com/Inkflow-Gab/claude-code-cli"' in response.text
     assert 'target="_blank"' in response.text
     assert 'rel="noopener noreferrer"' in response.text
-    assert 'aria-label="Open Free Claude Code on GitHub"' in response.text
+    assert 'aria-label="Open Nullx11 Code on GitHub"' in response.text
     assert 'src="/admin/assets/9.8.7/app-icon.svg"' in response.text
     assert 'href="/admin/assets/9.8.7/admin.css"' in response.text
     assert 'href="/admin/assets/9.8.7/code_sessions.css"' in response.text

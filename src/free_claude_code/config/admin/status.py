@@ -22,6 +22,7 @@ def provider_config_status(
             "provider_id": provider_id,
             "display_name": descriptor.display_name,
             "website_url": descriptor.website_url,
+            "credential_url": descriptor.credential_url,
             "logo_filename": descriptor.logo_filename,
         }
         settings_keys = [

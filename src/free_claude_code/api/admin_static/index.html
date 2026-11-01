@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Free Claude Code Admin</title>
+    <title>Nullx11 Code · Setup</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/admin/assets/__FCC_VERSION__/admin.css" />
     <link rel="stylesheet" href="/admin/assets/__FCC_VERSION__/code_sessions.css" />
@@ -15,16 +15,16 @@
         <div class="brand">
           <a
             class="brand-mark"
-            href="https://github.com/Alishahryar1/free-claude-code"
+            href="https://github.com/Inkflow-Gab/claude-code-cli"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Open Free Claude Code on GitHub"
+            aria-label="Open Nullx11 Code on GitHub"
           >
             <img src="/admin/assets/__FCC_VERSION__/app-icon.svg" alt="" />
           </a>
           <div>
-            <h1>Free Claude Code</h1>
-            <p>Server Control · v__FCC_VERSION__</p>
+            <h1>Nullx11 Code</h1>
+            <p>Powered by Free Claude Code · v__FCC_VERSION__</p>
           </div>
         </div>
         <nav id="sectionNav" class="section-nav" aria-label="Admin views"></nav>
@@ -40,6 +40,22 @@
 
         <div id="adminViews" class="admin-views">
           <section id="view-providers" class="admin-view active" data-view="providers">
+            <section class="setup-hub" aria-labelledby="setupHubTitle">
+              <div class="setup-hub-heading">
+                <div>
+                  <span class="setup-eyebrow">QUICK START / 01—03</span>
+                  <h3 id="setupHubTitle">Connect your first model</h3>
+                  <p>Pick a provider, get your own key, then choose a model. Your key stays in the local FCC configuration.</p>
+                </div>
+                <span id="setupHubStatus" class="setup-status" role="status">Loading setup…</span>
+              </div>
+              <div class="setup-steps">
+                <div class="setup-step" data-setup-step="provider"><span>01 / PROVIDER</span><strong>Choose a service</strong><div id="setupProviderChoices" class="setup-choices"></div></div>
+                <div class="setup-step" data-setup-step="access"><span>02 / ACCESS</span><strong>Get and save your key</strong><p>Open the provider’s official key page, paste the key in the setup dialog, then Save. FCC checks it when applying.</p></div>
+                <div class="setup-step" data-setup-step="model"><span>03 / MODEL</span><strong>Pick your model</strong><button id="setupChooseModel" class="secondary-button" type="button">Open model picker →</button></div>
+              </div>
+              <p class="setup-footnote">Keys must be obtained from the provider. Nullx11 Code cannot create credentials or promise a free tier.</p>
+            </section>
             <div id="providerGroups"></div>
             <div
               id="providersSections"
@@ -234,6 +250,10 @@
         <button id="closeProviderDialog" class="ghost-button" type="button" aria-label="Close provider settings">&#x2715;</button>
       </div>
       <div id="providerDialogBody">
+        <div id="providerKeyGuide" class="provider-key-guide" hidden>
+          <span>Need a key? Get one from the provider, then paste it below.</span>
+          <a id="providerKeyLink" target="_blank" rel="noopener noreferrer">Open official key page ↗</a>
+        </div>
         <div id="providerDialogActions" class="provider-actions"></div>
         <div id="providerDialogCheck" class="provider-check-result" role="status" hidden></div>
         <div id="providerFields" class="field-grid"></div>

@@ -78,9 +78,7 @@ class FakeOutbound:
     ) -> None:
         if self._delete_error is not None:
             raise self._delete_error
-        self.deleted.append(
-            {"chat_id": chat_id, "message_ids": list(message_ids)}
-        )
+        self.deleted.append({"chat_id": chat_id, "message_ids": list(message_ids)})
 
     def fire_and_forget(self, task: Any) -> None: ...
 
@@ -116,9 +114,7 @@ class FakeContext:
         self.stop_reply_calls: list[tuple[MessageScope, str]] = []
         self.clear_reply_calls: list[tuple[MessageScope, str]] = []
 
-    def format_status(
-        self, emoji: str, label: str, suffix: str | None = None
-    ) -> str:
+    def format_status(self, emoji: str, label: str, suffix: str | None = None) -> str:
         return f"{emoji} {label}" + (f" {suffix}" if suffix else "")
 
     def get_render_ctx(self) -> RenderCtx:

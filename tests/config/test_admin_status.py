@@ -34,6 +34,7 @@ def test_remote_status_exposes_ordered_configuration_targets() -> None:
         "provider_id": "nvidia_nim",
         "display_name": "NVIDIA NIM",
         "website_url": "https://build.nvidia.com/",
+        "credential_url": "https://build.nvidia.com/settings/api-keys",
         "logo_filename": "nvidia-color.svg",
         "kind": "remote",
         "status": "missing_key",

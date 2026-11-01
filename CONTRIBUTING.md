@@ -21,7 +21,7 @@ Install [uv](https://docs.astral.sh/uv/), then run directly from the checkout. u
 
 ```bash
 git clone https://github.com/Inkflow-Gab/claude-code-cli.git
-cd free-claude-code
+cd claude-code-cli
 uv run fcc-server
 ```
 

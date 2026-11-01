@@ -194,12 +194,12 @@ def test_admin_loads_current_release_assets_before_rendering_dynamic_content(
 
     expect(page.locator('[data-provider="nvidia_nim"]')).to_be_visible()
     expect(page.locator(".brand p")).to_have_text(
-        f"Server Control · v{package_version()}"
+        f"Powered by Free Claude Code · v{package_version()}"
     )
-    logo_link = page.get_by_role("link", name="Open Free Claude Code on GitHub")
+    logo_link = page.get_by_role("link", name="Open Nullx11 Code on GitHub")
     expect(logo_link).to_be_visible()
     expect(logo_link).to_have_attribute(
-        "href", "https://github.com/Alishahryar1/free-claude-code"
+        "href", "https://github.com/Inkflow-Gab/claude-code-cli"
     )
     expect(logo_link).to_have_attribute("target", "_blank")
 
@@ -218,3 +218,16 @@ def test_admin_loads_current_release_assets_before_rendering_dynamic_content(
     assert "/admin/assets/admin.js" not in requested_paths
     assert not any("/chat_sessions." in path for path in requested_paths)
     assert page_errors == []
+
+
+def test_provider_quickstart_links_to_official_key_page(page, admin_base_url):
+    page.goto(f"{admin_base_url}/admin")
+    page.get_by_role("button", name="Configure NVIDIA NIM").click()
+    dialog = page.locator("#providerDialog")
+    expect(dialog).to_be_visible()
+    link = dialog.get_by_role("link", name="Open official key page")
+    expect(link).to_have_attribute("href", "https://build.nvidia.com/settings/api-keys")
+    expect(link).to_have_attribute("target", "_blank")
+    dialog.get_by_role("button", name="Close provider settings").click()
+    page.get_by_role("button", name="Open model picker").click()
+    expect(page.locator("#view-model_config")).to_be_visible()
