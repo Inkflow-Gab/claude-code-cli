@@ -19,97 +19,141 @@
 
 </div>
 
-<p align="center">
-  <em>Independent open-source project. Not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic.</em>
-</p>
-
-> **Attribution:** This is a maintained copy of **Free Claude Code** by
-> [Alishahryar1](https://github.com/Alishahryar1). The original project lives at
-> [github.com/Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code),
-> and its installer remains at
-> `https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.sh`.
-> See [Credits](#credits) below.
-
-## Free Claude Code at a glance
-
-Free Claude Code (FCC) runs a **local proxy** between coding agents and model
-providers. Choose a coding agent, configure a provider you have access to, and
-use the `fcc-*` launchers to route requests through FCC. Provider free tiers
-and quotas are controlled by their operators; FCC does not grant free Claude
-Code or Anthropic credits. You may need a provider API key or subscription.
-
-- Run [Claude Code, Codex, Pi and other agents](docs/agents.md) with a shared
-  model catalog. FCC also supports browser Code Sessions and client integrations.
-- Choose among [hosted, subscription and local providers](docs/providers.md),
-  with optional fallback models. Check each provider's current terms and limits.
-- Code from an Ubuntu host or [control it from your phone](docs/install-mobile.md)
-  using Telegram or Discord. The server and project files remain on the host.
-- Optional voice notes, desktop integrations and RTK are documented below.
-
 ## Quick Start
 
-**First choose where the agent runs.** FCC is installed on the computer that
-contains your project files. A phone can control it with Telegram or Discord,
-but an Android Termux/proot installation is not supported. Choose one guide:
-
-| Goal | Guide |
-| --- | --- |
-| Install FCC and an agent on Ubuntu, macOS, Linux or Windows | **[Computer installation](docs/install-desktop.md)** |
-| Control a computer's FCC from Android or iPhone | **[Phone setup](docs/install-mobile.md)** (install on the computer first) |
-
-Each installation guide provides **one command per copyable block**, followed
-by verification and troubleshooting. Free Claude Code is a local proxy, not a
-source of Anthropic credits: set up a provider you have access to in local
-Admin before expecting model responses.
+Free Claude Code (FCC) runs on a **computer**, routes a coding agent to your
+chosen provider, and needs a provider key or account. **Run one command at a
+time.** The phone is a remote control, not a supported FCC host.
 
 <a id="install"></a>
 
-### Ubuntu in brief
+### Linux (Ubuntu / Debian)
 
-After installing Git and Make, [follow every step in the computer guide](docs/install-desktop.md#ubuntu-install).
-From the repository directory the core commands are:
+Run in a terminal on the computer:
 
-| Action | Command |
-| --- | --- |
-| Install prerequisites, FCC and Codex | `make setup AGENT=codex` |
-| Verify installed commands | `make check AGENT=codex` |
-| Start the local server (leave it running) | `make run` |
-| Check the running server from a second terminal | `make check-online AGENT=codex` |
-| Start the agent after configuring a provider | `fcc-codex` |
+```bash
+sudo apt-get update
+```
 
-Change `codex` to the same agent name throughout if you choose another agent.
-The full guide explains how to clone the repository, use curl instead of Make,
-install on Windows, and safely access Admin from a headless computer. Do not
-run the FCC installer as root. The server's Admin interface is loopback-only;
-never open it to the public internet.
+```bash
+sudo apt-get install -y ca-certificates git make
+```
+
+```bash
+git clone https://github.com/Inkflow-Gab/claude-code-cli.git
+```
+
+```bash
+cd claude-code-cli
+```
+
+```bash
+make setup AGENT=codex
+```
+
+```bash
+make check AGENT=codex
+```
+
+Start the server and **leave this terminal open**:
+
+```bash
+make run
+```
+
+Open the Admin URL printed by the server (normally
+`http://127.0.0.1:8082/admin`) **on that computer**. Add a
+[provider](docs/providers.md) key/account, select a model, and click **Apply**.
+In a **second terminal**, open your project directory and run:
+
+```bash
+fcc-codex
+```
+
+Use the same agent throughout: replace `codex` with `claude` or another
+[supported agent](docs/agents.md) if you prefer. [Full Linux instructions,
+curl alternative, and troubleshooting →](docs/install-desktop.md)
+
+### Windows (PowerShell)
+
+Run this in PowerShell **on the Windows computer** (review the
+[installer](scripts/install.ps1) first). Select **Codex** when prompted:
+
+```powershell
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/Inkflow-Gab/claude-code-cli/main/scripts/install.ps1")))
+```
+
+Open a **new PowerShell window** and verify:
+
+```powershell
+fcc-server --version
+```
+
+Start FCC and leave this window open (or use the installed desktop app):
+
+```powershell
+fcc-server
+```
+
+Open the local Admin URL shown by the server, configure a
+[provider](docs/providers.md), and click **Apply**. In another PowerShell
+window, open your project directory and run:
+
+```powershell
+fcc-codex
+```
+
+[Full Windows instructions and troubleshooting →](docs/install-desktop.md#windows-powershell)
+
+<a id="ubuntu-and-phone-setup"></a>
+
+### Mobile (Android / iPhone)
+
+**FCC does not install directly on the phone.** First complete the Linux or
+Windows setup above on a computer and **keep its server running**. To control
+that computer from Telegram on your phone:
+
+1. Send this to [@BotFather](https://t.me/BotFather) **in Telegram**:
+
+   ```text
+   /newbot
+   ```
+
+2. Send this to [@userinfobot](https://t.me/userinfobot) **in Telegram**:
+
+   ```text
+   /start
+   ```
+
+3. On the **computer**, open local Admin → **Messaging**. Set platform to
+   `telegram`, paste the BotFather token and your numeric user ID, set
+   **Allowed Directory** to a project folder on the computer, then click
+   **Apply**. Restart the server if prompted.
+4. On the **phone**, open your new bot, tap **Start**, and message it. The agent
+   edits files on the computer. **Never expose Admin or port 8082 publicly.**
+
+[Full mobile walkthrough (including Discord) →](docs/install-mobile.md)
+
+### Other platforms and options
+
+- [macOS, curl-based Linux install, headless Ubuntu, checks](docs/install-desktop.md)
+- [Agents and launchers](docs/agents.md) · [Providers and models](docs/providers.md)
+- [Phone troubleshooting](docs/install-mobile.md#if-your-bot-does-not-reply)
 
 <a id="nvidia-nim-provider"></a>
 <a id="3-configure-nvidia-nim"></a>
 
-### Provider example: NVIDIA NIM
+## Provider example: NVIDIA NIM
 
-After starting the server, open the **local Admin URL** shown in its log.
-Obtain a key from [NVIDIA NIM](https://build.nvidia.com/settings/api-keys),
-enter `NVIDIA_NIM_API_KEY`, choose a tool-capable model in `MODEL`, then click
-**Apply**. See [Choose a provider](docs/providers.md) for alternatives.
-Never paste keys into commands or public issues. The local `/health` check only
-confirms the server responds; it does not test a provider.
-
-<a id="ubuntu-and-phone-setup"></a>
-
-### Want to use a phone?
-
-[Set up Telegram or Discord](docs/install-mobile.md) after installing FCC on
-an Ubuntu/macOS/Windows host. The agent and project stay on the host; the
-phone is only the remote control. The host must remain on and connected.
+Get a key at [NVIDIA NIM](https://build.nvidia.com/settings/api-keys). In local
+Admin set `NVIDIA_NIM_API_KEY`, select a tool-capable `MODEL`, and click **Apply**.
+FCC does not give you Anthropic credits or guarantee a free provider tier.
 
 ## Troubleshooting
 
-- **Installation or missing command?** Follow the troubleshooting table in
-  the [computer guide](docs/install-desktop.md#troubleshooting).
-- **Bot not responding?** Follow the [mobile guide](docs/install-mobile.md#if-your-bot-does-not-reply).
-- **Problem after installing?** Run `fcc-doctor` on the host and review the
-  diagnostic report before sharing it. It may copy the report to your clipboard.
+- Installer/command issue: [computer guide](docs/install-desktop.md#troubleshooting)
+- Bot not responding: [mobile guide](docs/install-mobile.md#if-your-bot-does-not-reply)
+- Diagnostic on the computer: `fcc-doctor` (review output before sharing)
 
 ## Choose A Provider
 
