@@ -1,4 +1,4 @@
-# Install or use Free Claude Code on a phone
+# Install or use Nullx11 Code on a phone
 
 Choose **one** mode: experimental [Android on-device](#run-on-the-android-phone-experimental)
 installation, or [remote control](#phone-as-a-remote-control) of a computer.

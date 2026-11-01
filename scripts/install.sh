@@ -219,64 +219,8 @@ choose_coding_agents() {
     exec 4>&-
 }
 
-installer_has_color() {
-    [ -t 1 ] && [ -z "${NO_COLOR:-}" ] && [ "${TERM:-dumb}" != "dumb" ]
-}
-
-installer_anim_palette() {
-    # Bright rainbow rotation: red, yellow, green, cyan, blue, magenta.
-    case $(( $1 % 6 )) in
-        0) printf '\033[91m' ;;
-        1) printf '\033[93m' ;;
-        2) printf '\033[92m' ;;
-        3) printf '\033[96m' ;;
-        4) printf '\033[94m' ;;
-        5) printf '\033[95m' ;;
-    esac
-}
-
-installer_anim_pause() {
-    # Busy-wait: fractional sleep is not portable across sh, dash, and macOS.
-    _anim_wait=0
-    while [ "$_anim_wait" -lt 6000 ]; do _anim_wait=$(( _anim_wait + 1 )); done
-}
-
-installer_anim_paint() {
-    # Rainbow-paint the label with a bright spark on the current frame's char.
-    _anim_label=$1
-    _anim_frame=$2
-    _anim_index=0
-    _anim_len=${#_anim_label}
-    while [ "$_anim_index" -lt "$_anim_len" ]; do
-        if [ "$_anim_index" -eq "$_anim_frame" ]; then
-            printf '\033[97m'
-        else
-            installer_anim_palette $(( _anim_frame + _anim_index ))
-        fi
-        printf '%s' "$(printf '%s' "$_anim_label" | cut -c $(( _anim_index + 1 )))"
-        _anim_index=$(( _anim_index + 1 ))
-    done
-    printf '\033[0m'
-}
-
 step() {
-    label=$1
-    length=${#label}
-    if ! installer_has_color || [ "$length" -eq 0 ]; then
-        printf '\n==> %s\n' "$label"
-        return 0
-    fi
-    frames=$length
-    if [ "$frames" -lt 3 ]; then frames=3; fi
-    if [ "$frames" -gt 10 ]; then frames=10; fi
-    _anim_frame=0
-    while [ "$_anim_frame" -lt "$frames" ]; do
-        printf '\r'
-        installer_anim_paint "$label" "$_anim_frame"
-        installer_anim_pause
-        _anim_frame=$(( _anim_frame + 1 ))
-    done
-    printf '\r\033[K\n==> %s\n' "$label"
+    printf '\n==> %s\n' "$1"
 }
 
 quote_arg() {
@@ -454,11 +398,11 @@ download_file() {
     # curl's progress bar reflects actual transfer progress. CI and redirected
     # output stay quiet; upstream installers keep their own output visible.
     if [ -t 2 ]; then
-        print_command curl -fL --progress-bar "$download_url" -o "$download_destination"
-        curl -fL --progress-bar "$download_url" -o "$download_destination"
+        print_command curl -fL --progress-bar --retry 3 --retry-delay 1 --connect-timeout 15 "$download_url" -o "$download_destination"
+        curl -fL --progress-bar --retry 3 --retry-delay 1 --connect-timeout 15 "$download_url" -o "$download_destination"
     else
-        print_command curl -fsSL "$download_url" -o "$download_destination"
-        curl -fsSL "$download_url" -o "$download_destination"
+        print_command curl -fsSL --retry 3 --retry-delay 1 --connect-timeout 15 "$download_url" -o "$download_destination"
+        curl -fsSL --retry 3 --retry-delay 1 --connect-timeout 15 "$download_url" -o "$download_destination"
     fi
 }
 
@@ -474,7 +418,7 @@ download_and_run() {
     fi
 
     if [ "$dry_run" -eq 1 ]; then
-        print_command curl -fsSL "$url" -o "<temporary-script>"
+        print_command curl -fsSL --retry 3 --retry-delay 1 --connect-timeout 15 "$url" -o "<temporary-script>"
         if [ "$non_interactive" -eq 1 ]; then
             printf '+ CODEX_NON_INTERACTIVE=1 '
             quote_arg "$interpreter"
@@ -619,7 +563,7 @@ install_rtk() {
     select_rtk_release
     rtk_archive_url="$RTK_RELEASE_BASE_URL/$rtk_asset_name"
     if [ "$dry_run" -eq 1 ]; then
-        print_command curl -fsSL "$rtk_archive_url" -o "<temporary-archive>"
+        print_command curl -fsSL --retry 3 --retry-delay 1 --connect-timeout 15 "$rtk_archive_url" -o "<temporary-archive>"
         printf '+ verify pinned SHA-256 for %s\n' "$rtk_asset_name"
         printf '+ extract rtk to %s\n' "${HOME:-~}/.local/bin/rtk"
         return 0

@@ -222,6 +222,7 @@ async function load({ providersOnly = false } = {}) {
   if (!providersOnly) renderNav();
   state.providerChecks.clear();
   renderProviders(config.provider_status);
+  renderSetupHub(config);
   if (!providersOnly) renderSections(config.sections, config.fields);
   byId("configPath").textContent = config.paths.managed;
   void refreshLocalStatus(config);
@@ -308,6 +309,35 @@ function navigateToView(viewId) {
   }
   setActiveView(viewId, { scroll: true });
 }
+
+// The catalog supplies official credential URLs; never guess or proxy keys.
+function renderSetupHub(config) {
+  const featured = ["nvidia_nim", "open_router", "groq", "gemini"];
+  const choices = byId("setupProviderChoices");
+  choices.replaceChildren();
+  const providers = featured.map((id) => config.provider_status.find((item) => item.provider_id === id)).filter(Boolean);
+  providers.forEach((provider) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "setup-provider";
+    button.textContent = provider.display_name;
+    button.setAttribute("aria-label", `Configure ${provider.display_name}`);
+    button.addEventListener("click", () => openProviderDialog(provider.provider_id));
+    choices.appendChild(button);
+  });
+  const configured = config.provider_status.filter((provider) => provider.status === "configured" && provider.kind === "remote");
+  const model = config.fields.find((field) => field.key === "MODEL")?.value;
+  const ready = configured.some((provider) => model?.startsWith(`${provider.provider_id}/`));
+  document.querySelector('[data-setup-step="provider"]').classList.toggle("complete", configured.length > 0);
+  document.querySelector('[data-setup-step="access"]').classList.toggle("complete", configured.length > 0);
+  document.querySelector('[data-setup-step="model"]').classList.toggle("complete", ready);
+  byId("setupHubStatus").textContent = ready ? "Ready to code" : configured.length ? "Provider ready · choose a model" : "Waiting for a provider";
+}
+
+byId("setupChooseModel").addEventListener("click", () => {
+  navigateToView("model_config");
+  byId("field-MODEL")?.focus();
+});
 
 function renderProviders(providerStatus) {
   const container = byId("providerGroups");
@@ -434,6 +464,9 @@ function openProviderDialog(providerId) {
   state.providerId = providerId;
   const provider = connectedAccountDescriptor(providerId);
   byId("providerDialogTitle").textContent = connectedAccountName(provider);
+  const keyGuide = byId("providerKeyGuide");
+  keyGuide.hidden = !provider.credential_url || provider.kind === "connected_account";
+  if (!keyGuide.hidden) byId("providerKeyLink").href = provider.credential_url;
   byId("providerMessage").textContent = "";
   const fields = byId("providerFields");
   fields.replaceChildren();
@@ -472,6 +505,7 @@ function openCustomProviderDialog(providerId = null) {
   state.providerId = providerId || "__custom_new__";
   state.customProvider = provider;
   byId("providerDialogTitle").textContent = providerId ? provider.display_name : "Add provider";
+  byId("providerKeyGuide").hidden = true;
   byId("providerMessage").textContent = "";
   byId("providerDialogCheck").hidden = true;
   const fields = byId("providerFields");

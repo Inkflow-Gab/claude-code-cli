@@ -1,11 +1,7 @@
 <div align="center">
 
-<h1>
-  <picture>
-    <source media="(prefers-color-scheme: light)" srcset="assets/free-claude-code-wordmark-light.svg">
-    <img src="assets/free-claude-code-wordmark-dark.svg" alt="Free Claude Code" width="610">
-  </picture>
-</h1>
+<h1>Nullx11 Code</h1>
+<p><strong>Powered by Free Claude Code</strong></p>
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-2e7d32.svg?style=for-the-badge)](https://github.com/Inkflow-Gab/claude-code-cli/blob/main/LICENSE)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776ab.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
@@ -21,8 +17,10 @@
 
 ## Quick Start
 
-Free Claude Code (FCC) runs on a **computer**, routes a coding agent to your
-chosen provider, and needs a provider key or account. **Run one command at a
+Nullx11 Code is the interface for Free Claude Code (FCC). It runs on a
+**computer**, routes a coding agent to your chosen provider, and needs a
+provider key or account. The install package remains `free-claude-code` and
+commands remain `fcc-*` so existing setups still work. **Run one command at a
 time.** Android on-device setup is experimental; the computer setup is the
 reliable option.
 
@@ -233,9 +231,12 @@ Message your bot from the phone. Never expose Admin or port 8082 publicly.
 
 ## Provider example: NVIDIA NIM
 
-Get a key at [NVIDIA NIM](https://build.nvidia.com/settings/api-keys). In local
-Admin set `NVIDIA_NIM_API_KEY`, select a tool-capable `MODEL`, and click **Apply**.
-FCC does not give you Anthropic credits or guarantee a free provider tier.
+In local Admin, the **Connect your first model** guide links to official
+provider key pages. Choose a provider, obtain and paste your own key, save it,
+then open the model picker and click **Apply**. For example, get a key at
+[NVIDIA NIM](https://build.nvidia.com/settings/api-keys) and enter it as
+`NVIDIA_NIM_API_KEY`. Keys cannot be generated automatically by this app;
+provider terms and free tiers are controlled by the provider.
 
 ## Troubleshooting
 
@@ -358,7 +359,7 @@ Stop every running FCC command before uninstalling.
 
 **Removes**
 
-- Free Claude Code, including its desktop launcher and commands
+- The Free Claude Code package, including its desktop launcher and commands
 - `~/.fcc/`
 
 **Keeps**

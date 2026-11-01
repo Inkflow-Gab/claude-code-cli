@@ -1,6 +1,6 @@
-# Install Free Claude Code on a computer
+# Install Nullx11 Code on a computer
 
-Free Claude Code (FCC) runs on your **computer** alongside a coding agent. It
+Nullx11 Code uses Free Claude Code (FCC), which runs on your **computer** alongside a coding agent. It
 routes the agent to a provider you configure; it does not supply Anthropic
 credits or guarantee a free provider tier. Choose **one** installation path
 below. Run commands one at a time, stopping if a step fails. Do not run the FCC
