@@ -1,5 +1,6 @@
 <div align="center">
 
+<img src="src/free_claude_code/assets/app-icon.svg" alt="Nullx11 Code icon" width="88" />
 <h1>Nullx11 Code</h1>
 <p><strong>Powered by Free Claude Code</strong></p>
 
@@ -46,19 +47,6 @@ git clone https://github.com/Inkflow-Gab/claude-code-cli.git
 cd claude-code-cli
 ```
 
-If you are reading **open PR #4 before it merges**, this clone is still the
-older `main`. Fetch its code before `make setup` (save local edits first):
-
-```bash
-git fetch origin pull/4/head
-```
-
-```bash
-git switch --detach FETCH_HEAD
-```
-
-Fresh clones of `main` after the PR merges can skip those two commands.
-
 ```bash
 make setup AGENT=codex
 ```
@@ -85,6 +73,45 @@ fcc-codex
 Use the same agent throughout: replace `codex` with `claude` or another
 [supported agent](docs/agents.md) if you prefer. [Full Linux instructions,
 curl alternative, and troubleshooting →](docs/install-desktop.md)
+
+### Choose a mode with `nullx`
+
+After installing the current Nullx11 Code build from this fork, run this
+**from any directory**:
+
+```bash
+nullx
+```
+
+The installer installs this fork's `main` branch, so the menu is available
+through the installer **after these changes reach `main`**. To try this checkout
+before then, run the following from its directory (with uv installed):
+
+```bash
+uv tool install --force --python 3.14.7 .
+```
+
+Afterward, `nullx` runs from anywhere. Reopen your terminal after installation
+if your updated uv tool PATH has not taken effect yet.
+
+The menu offers **Telegram or Discord** (the existing bot workflow, using your
+configured bot credentials), **coding-agent CLI** (launches an existing
+`fcc-*` command), the local web dashboard, and the FCC server. Configure your
+provider and model in Admin first. The messaging choice only applies to the
+server launched by that menu; it does not overwrite saved settings. For CLI
+coding agents, keep `fcc-server` running in a second terminal.
+
+On startup, `nullx` checks GitHub `main` if it can identify the revision of
+your installed build. It **asks twice** before installing a newer commit with
+`uv`; declining leaves everything unchanged. If your installed package has no
+Git revision, the menu still works but cannot reliably compare it with `main`.
+Update checks are skipped in non-interactive mode. You can also use the
+existing `fcc-*` commands directly.
+
+The new [local welcome page](http://127.0.0.1:8082/admin/welcome) gives you
+entry points for setup, code sessions, and messaging. The Admin dashboard
+remains at `/admin` and is deliberately local-only; it cannot be opened from
+another device without a trusted local-access arrangement.
 
 ### Windows (PowerShell)
 

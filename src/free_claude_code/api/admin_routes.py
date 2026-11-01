@@ -48,6 +48,7 @@ _ADMIN_ASSET_MEDIA_TYPES = {
 _ADMIN_ASSET_FILENAMES = frozenset(
     {
         "admin.css",
+        "welcome.css",
         "admin.js",
         "form_controls.js",
         "app-icon.svg",
@@ -100,6 +101,15 @@ def _asset_response(filename: str) -> FileResponse:
 
 def admin_page_response() -> HTMLResponse:
     template = _asset_path("index.html").read_text(encoding="utf-8")
+    return HTMLResponse(
+        template.replace(_ADMIN_ASSET_VERSION_PLACEHOLDER, package_version())
+    )
+
+
+@router.get("/admin/welcome", include_in_schema=False)
+def welcome_page(request: Request):
+    require_loopback_admin(request)
+    template = _asset_path("welcome.html").read_text(encoding="utf-8")
     return HTMLResponse(
         template.replace(_ADMIN_ASSET_VERSION_PLACEHOLDER, package_version())
     )

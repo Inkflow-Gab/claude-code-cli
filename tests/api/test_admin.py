@@ -49,6 +49,21 @@ def test_retired_chat_urls_are_not_served(path):
     assert client.get(path).status_code == 404
 
 
+def test_local_welcome_page_links_to_working_admin_views():
+    client = _local_client(create_test_app())
+    response = client.get("/admin/welcome")
+    assert response.status_code == 200
+    for path in ("/admin", "/admin/code", "/admin/messaging"):
+        assert f'href="{path}"' in response.text
+    assert (
+        client.get(f"/admin/assets/{package_version()}/welcome.css").status_code == 200
+    )
+    remote = TestClient(
+        create_test_app(), base_url="http://127.0.0.1", client=("203.0.113.10", 50000)
+    )
+    assert remote.get("/admin/welcome").status_code == 403
+
+
 def test_admin_retains_code_without_chat_markup():
     client = _local_client(create_test_app())
     response = client.get("/admin")

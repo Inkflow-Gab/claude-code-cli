@@ -18,7 +18,7 @@ UV_INSTALL_URL="https://astral.sh/uv/install.sh"
 FCC_MACOS_BUNDLE_ID="io.github.alishahryar1.free-claude-code"
 FCC_MACOS_OWNER_FILE=".free-claude-code-owner"
 # Include retired entry points so updates reject older FCC processes before replacement.
-FCC_COMMANDS="fcc-desktop fcc-server fcc-claude fcc-codex fcc-pi fcc-opencode fcc-cline fcc-hermes fcc-dsh fcc-grok fcc-muse fcc-aider fcc-doctor fcc-update fcc-init free-claude-code"
+FCC_COMMANDS="fcc-desktop fcc-server fcc-claude fcc-codex fcc-pi fcc-opencode fcc-cline fcc-hermes fcc-dsh fcc-grok fcc-muse fcc-aider fcc-doctor fcc-update nullx fcc-init free-claude-code"
 
 dry_run=0
 voice_local=0
@@ -394,16 +394,29 @@ download_file() {
     download_url=$1
     download_destination=$2
     download_label=$3
-    printf 'Downloading %s...\n' "$download_label"
-    # curl's progress bar reflects actual transfer progress. CI and redirected
-    # output stay quiet; upstream installers keep their own output visible.
+    # Curl's native bar animates actual bytes, not an invented percentage. Keep
+    # CI/plain terminals clean, and limit interactive color to cool blue tones.
     if [ -t 2 ]; then
+        if [ -z "${NO_COLOR+x}" ] && [ "${TERM:-dumb}" != "dumb" ]; then
+            printf '\033[38;5;45m> \033[38;5;81mDownloading \033[38;5;111m%s\033[0m\n' "$download_label" >&2
+            printf '\033[38;5;81m' >&2
+            download_colored=1
+        else
+            printf 'Downloading %s...\n' "$download_label" >&2
+            download_colored=0
+        fi
         print_command curl -fL --progress-bar --retry 3 --retry-delay 1 --connect-timeout 15 "$download_url" -o "$download_destination"
-        curl -fL --progress-bar --retry 3 --retry-delay 1 --connect-timeout 15 "$download_url" -o "$download_destination"
-    else
-        print_command curl -fsSL --retry 3 --retry-delay 1 --connect-timeout 15 "$download_url" -o "$download_destination"
-        curl -fsSL --retry 3 --retry-delay 1 --connect-timeout 15 "$download_url" -o "$download_destination"
+        if curl -fL --progress-bar --retry 3 --retry-delay 1 --connect-timeout 15 "$download_url" -o "$download_destination"; then
+            download_status=0
+        else
+            download_status=$?
+        fi
+        [ "$download_colored" -eq 0 ] || printf '\033[0m' >&2
+        return "$download_status"
     fi
+    printf 'Downloading %s...\n' "$download_label"
+    print_command curl -fsSL --retry 3 --retry-delay 1 --connect-timeout 15 "$download_url" -o "$download_destination"
+    curl -fsSL --retry 3 --retry-delay 1 --connect-timeout 15 "$download_url" -o "$download_destination"
 }
 
 download_and_run() {
@@ -1356,10 +1369,12 @@ validate_args() {
 }
 
 package_spec() {
+    # Install this fork's main branch, not an unrelated published FCC build.
+    # hatch-vcs embeds its Git revision so nullx can compare it to main later.
     if [ "$voice_local" -eq 1 ]; then
-        printf '%s' 'free-claude-code[voice_local]'
+        printf '%s' 'free-claude-code[voice_local] @ git+https://github.com/Inkflow-Gab/claude-code-cli.git@main'
     else
-        printf '%s' 'free-claude-code'
+        printf '%s' 'free-claude-code @ git+https://github.com/Inkflow-Gab/claude-code-cli.git@main'
     fi
 }
 
@@ -1386,7 +1401,7 @@ configure_and_verify_free_claude_code() {
 
     add_uv_tool_bin_directory
 
-    for command_name in fcc-desktop fcc-server fcc-claude fcc-codex fcc-pi fcc-opencode fcc-cline fcc-hermes fcc-dsh fcc-grok fcc-muse fcc-aider fcc-doctor fcc-update; do
+    for command_name in fcc-desktop fcc-server fcc-claude fcc-codex fcc-pi fcc-opencode fcc-cline fcc-hermes fcc-dsh fcc-grok fcc-muse fcc-aider fcc-doctor fcc-update nullx; do
         [ -x "$tool_bin/$command_name" ] || fail "Free Claude Code installation did not create $tool_bin/$command_name."
     done
 
@@ -1552,6 +1567,7 @@ else
         printf 'For terminal use, start the proxy with: fcc-server\n'
     else
         printf '\nFree Claude Code is installed and verified. Start the proxy with: fcc-server\n'
+        printf 'Open the Nullx11 Code menu from any directory with: nullx\n'
     fi
     if [ "$install_claude" -eq 1 ]; then
         printf 'Run Claude Code with: fcc-claude\n'

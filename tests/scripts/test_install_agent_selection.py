@@ -65,6 +65,7 @@ def test_curl_download_helper_preserves_success_and_failure(tmp_path: Path) -> N
     )
     assert result.returncode == 0, result.stderr
     assert destination.read_bytes() == source.read_bytes()
+    assert "\x1b[" not in result.stdout + result.stderr
 
     result = subprocess.run(
         ["sh", "-c", command, "sh", (tmp_path / "missing").as_uri(), str(destination)],
@@ -73,6 +74,61 @@ def test_curl_download_helper_preserves_success_and_failure(tmp_path: Path) -> N
         check=False,
     )
     assert result.returncode != 0
+
+
+def test_download_progress_blends_blue_only_on_a_tty(tmp_path: Path) -> None:
+    if os.name == "nt" or shutil.which("curl") is None:
+        return
+    import pty
+
+    text = INSTALLER.read_text(encoding="utf-8")
+    helper = text.split("download_file() {", 1)[1].split("\ndownload_and_run() {", 1)[0]
+    command = (
+        "print_command() { :; }\ndownload_file() {"
+        + helper
+        + '\ndownload_file "$1" "$2" fixture\n'
+    )
+    source = tmp_path / "input.sh"
+    source.write_text("echo hello\n", encoding="utf-8")
+    for no_color in (False, True):
+        master, slave = pty.openpty()
+        env = {**os.environ, "TERM": "xterm-256color"}
+        if no_color:
+            env["NO_COLOR"] = ""
+        else:
+            env.pop("NO_COLOR", None)
+        try:
+            result = subprocess.run(
+                ["sh", "-c", command, "sh", source.as_uri(), str(tmp_path / "out.sh")],
+                stdout=subprocess.PIPE,
+                stderr=slave,
+                env=env,
+                check=False,
+            )
+            os.close(slave)
+            slave = -1
+            chunks = []
+            while True:
+                try:
+                    chunk = os.read(master, 4096)
+                except OSError:
+                    break
+                if not chunk:
+                    break
+                chunks.append(chunk)
+            output = b"".join(chunks)
+            assert result.returncode == 0
+            if no_color:
+                assert b"\x1b[" not in output
+            else:
+                assert b"38;5;45m" in output
+                assert b"38;5;111m" in output
+                assert b"38;5;91m" not in output
+                assert b"\x1b[0m" in output
+        finally:
+            if slave != -1:
+                os.close(slave)
+            os.close(master)
 
 
 def test_make_install_without_agent_fails_when_non_interactive() -> None:
