@@ -57,10 +57,38 @@ git clone https://github.com/Inkflow-Gab/claude-code-cli.git
 cd claude-code-cli
 ```
 
-This is an experimental on-device install: the proot environment may not
-provide compatible Python or coding-agent ARM64 builds. To try the current
-unmerged Nullx11 branch, use `--from-checkout` after obtaining its source;
-otherwise the installer uses GitHub `main`.
+If you cloned this repo previously (including before the guided installer was
+merged), **do not re-clone over it**. In the existing `~/claude-code-cli`
+checkout inside Ubuntu, check for local edits:
+
+```sh
+git status --short
+```
+
+```sh
+git branch --show-current
+```
+
+If there are no local edits and the branch output is `main`, update it safely.
+If it is blank, this may be a detached checkout from older instructions:
+`git switch main` is appropriate only after preserving your work. If it names
+another branch, stop rather than accidentally updating the wrong branch.
+
+```sh
+git pull --ff-only origin main
+```
+
+If the pull refuses because of local changes or a diverged branch, stop and
+preserve those changes instead of force-resetting. Confirm that the *local*
+script now supports the option:
+
+```sh
+sh scripts/install.sh --help
+```
+
+Look for `--guided` in the output. Merely updating the installed FCC package
+will not update scripts in an older checkout. This is an experimental on-device
+install: proot may lack compatible Python or coding-agent ARM64 builds.
 Preview the single-agent install without network changes:
 
 ```sh
