@@ -57,20 +57,10 @@ git clone https://github.com/Inkflow-Gab/claude-code-cli.git
 cd claude-code-cli
 ```
 
-**If reading these instructions from open PR #4 before merge:** `git clone`
-checks out older `main`, which does not know `--agent` and does not have
-`check-setup.sh`. If `sh scripts/install.sh --help` does not list `--agent`,
-fetch the PR version now (save any local changes first):
-
-```sh
-git fetch origin pull/4/head
-```
-
-```sh
-git switch --detach FETCH_HEAD
-```
-
-After the PR merges, fresh clones of `main` have these files and can skip this.
+This is an experimental on-device install: the proot environment may not
+provide compatible Python or coding-agent ARM64 builds. To try the current
+unmerged Nullx11 branch, use `--from-checkout` after obtaining its source;
+otherwise the installer uses GitHub `main`.
 Preview the single-agent install without network changes:
 
 ```sh
@@ -81,8 +71,12 @@ If the preview succeeds, try the install. This downloads Python, FCC, and an
 upstream Codex installer; success depends on their ARM64 support:
 
 ```sh
-sh scripts/install.sh --agent codex
+sh scripts/install.sh --guided --agent codex
 ```
+
+When asked to start the server, answer **n** here: the commands below start it
+explicitly on loopback. The phone's browser may not open automatically from
+inside proot.
 
 ```sh
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"

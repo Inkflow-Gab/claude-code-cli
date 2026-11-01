@@ -57,6 +57,7 @@ $FccCommands = @(
     "fcc-muse",
     "fcc-aider",
     "fcc-doctor",
+    "nullx",
     "fcc-update",
     "fcc-init",
     "free-claude-code"
@@ -420,6 +421,14 @@ function Invoke-DownloadedPowerShellInstaller {
     $temporaryScript = Join-Path ([IO.Path]::GetTempPath()) ("fcc-install-" + [guid]::NewGuid().ToString("N") + ".ps1")
     try {
         Write-Host "+ irm $Url -OutFile $(Format-Argument $temporaryScript)"
+        if (-not (Test-Path Env:NO_COLOR) -and -not [Console]::IsOutputRedirected) {
+            Write-Host -NoNewline -ForegroundColor DarkCyan "> "
+            Write-Host -NoNewline -ForegroundColor Cyan "Downloading "
+            Write-Host -ForegroundColor White "$Name..."
+        }
+        else {
+            Write-Host "Downloading $Name..."
+        }
         Invoke-RestMethod -Uri $Url -OutFile $temporaryScript -ErrorAction Stop
         if ((-not (Test-Path -LiteralPath $temporaryScript)) -or ((Get-Item -LiteralPath $temporaryScript).Length -eq 0)) {
             throw "The downloaded $Name installer was empty."
@@ -1422,9 +1431,9 @@ function Ensure-Uv {
 
 function Get-PackageSpec {
     if ($VoiceLocal) {
-        return "free-claude-code[voice_local]"
+        return "free-claude-code[voice_local] @ git+https://github.com/Inkflow-Gab/claude-code-cli.git@main"
     }
-    return "free-claude-code"
+    return "free-claude-code @ git+https://github.com/Inkflow-Gab/claude-code-cli.git@main"
 }
 
 function Install-FreeClaudeCode {
@@ -1516,7 +1525,7 @@ function Configure-AndConfirmFreeClaudeCode {
         [IO.Path]::AltDirectorySeparatorChar
     )
     $installedCommands = @{}
-    foreach ($commandName in @("fcc-desktop", "fcc-server", "fcc-claude", "fcc-codex", "fcc-pi", "fcc-opencode", "fcc-cline", "fcc-hermes", "fcc-dsh", "fcc-grok", "fcc-muse", "fcc-aider", "fcc-doctor", "fcc-update.cmd")) {
+    foreach ($commandName in @("fcc-desktop", "fcc-server", "fcc-claude", "fcc-codex", "fcc-pi", "fcc-opencode", "fcc-cline", "fcc-hermes", "fcc-dsh", "fcc-grok", "fcc-muse", "fcc-aider", "fcc-doctor", "nullx", "fcc-update.cmd")) {
         $command = Get-ApplicationCommand $commandName
         if (-not $command) {
             throw "Free Claude Code installation did not create '$commandName'."
@@ -1659,6 +1668,7 @@ if ($DryRun) {
 else {
     Write-Host "Free Claude Code is installed and verified. Open the Free Claude Code desktop shortcut to run it in the background."
     Write-Host "For terminal use, start the proxy with: fcc-server"
+    Write-Host "Open the Nullx11 Code menu from any directory with: nullx (reopen PowerShell if PATH has not refreshed)."
     if ($script:InstallClaudeCode) {
         Write-Host "Run Claude Code with: fcc-claude"
     }

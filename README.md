@@ -1,5 +1,6 @@
 <div align="center">
 
+<img src="src/free_claude_code/assets/app-icon.svg" alt="Nullx11 Code icon" width="88" />
 <h1>Nullx11 Code</h1>
 <p><strong>Powered by Free Claude Code</strong></p>
 
@@ -35,7 +36,7 @@ sudo apt-get update
 ```
 
 ```bash
-sudo apt-get install -y ca-certificates git make
+sudo apt-get install -y ca-certificates curl git make
 ```
 
 ```bash
@@ -46,45 +47,77 @@ git clone https://github.com/Inkflow-Gab/claude-code-cli.git
 cd claude-code-cli
 ```
 
-If you are reading **open PR #4 before it merges**, this clone is still the
-older `main`. Fetch its code before `make setup` (save local edits first):
+Run the **guided, all-in-one installer**. It asks you to choose one coding
+agent, shows live steps and actual download progress, installs and checks
+Nullx11 Code, then offers to start the server and open local Admin setup:
 
 ```bash
-git fetch origin pull/4/head
+sh scripts/install.sh --guided
 ```
+
+When asked, choose an agent (Enter selects Codex). Keep the first terminal
+open if you start the server. On a computer, Admin normally opens at
+`http://127.0.0.1:8082/admin`; there, add your own [provider](docs/providers.md)
+key, pick a model, and click **Apply**. Credentials are never entered into the
+installer. In a **second terminal**, from any project directory, run:
 
 ```bash
-git switch --detach FETCH_HEAD
+nullx
 ```
 
-Fresh clones of `main` after the PR merges can skip those two commands.
+Choose **Coding agent CLI**, then your installed agent. You can still run
+`fcc-codex` directly. For an unattended install, specify an agent; this
+installs and verifies but does not launch a server:
 
 ```bash
-make setup AGENT=codex
+sh scripts/install.sh --guided --agent codex
 ```
+
+You can also use `make setup AGENT=codex`, `make check AGENT=codex`, and
+`make run` separately. Before this PR merges, use `--from-checkout` to install
+the local branch rather than the older GitHub `main`:
 
 ```bash
-make check AGENT=codex
+sh scripts/install.sh --guided --from-checkout
 ```
 
-Start the server and **leave this terminal open**:
+[Full Linux instructions, curl alternative, and troubleshooting →](docs/install-desktop.md)
+
+### Choose a mode with `nullx`
+
+After installing the current Nullx11 Code build from this fork, run this
+**from any directory**:
 
 ```bash
-make run
+nullx
 ```
 
-Open the Admin URL printed by the server (normally
-`http://127.0.0.1:8082/admin`) **on that computer**. Add a
-[provider](docs/providers.md) key/account, select a model, and click **Apply**.
-In a **second terminal**, open your project directory and run:
+The hosted installer installs this fork's `main` branch. To try this checkout
+before these changes merge, use `sh scripts/install.sh --guided --from-checkout`
+from the checkout as shown above. This uses the same guided installation and
+verifies the `nullx` command.
 
-```bash
-fcc-codex
-```
+Afterward, `nullx` runs from anywhere. Reopen your terminal after installation
+if your updated uv tool PATH has not taken effect yet.
 
-Use the same agent throughout: replace `codex` with `claude` or another
-[supported agent](docs/agents.md) if you prefer. [Full Linux instructions,
-curl alternative, and troubleshooting →](docs/install-desktop.md)
+The menu offers **Telegram or Discord** (the existing bot workflow, using your
+configured bot credentials), **coding-agent CLI** (launches an existing
+`fcc-*` command), the local web dashboard, and the FCC server. Configure your
+provider and model in Admin first. The messaging choice only applies to the
+server launched by that menu; it does not overwrite saved settings. For CLI
+coding agents, keep `fcc-server` running in a second terminal.
+
+On startup, `nullx` checks GitHub `main` if it can identify the revision of
+your installed build. It **asks twice** before installing a newer commit with
+`uv`; declining leaves everything unchanged. If your installed package has no
+Git revision, the menu still works but cannot reliably compare it with `main`.
+Update checks are skipped in non-interactive mode. You can also use the
+existing `fcc-*` commands directly.
+
+The new [local welcome page](http://127.0.0.1:8082/admin/welcome) gives you
+entry points for setup, code sessions, and messaging. The Admin dashboard
+remains at `/admin` and is deliberately local-only; it cannot be opened from
+another device without a trusted local-access arrangement.
 
 ### Windows (PowerShell)
 
