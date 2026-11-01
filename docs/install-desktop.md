@@ -40,6 +40,38 @@ git clone https://github.com/Inkflow-Gab/claude-code-cli.git
 cd claude-code-cli
 ```
 
+If this is an older clone, check for local changes and confirm the branch:
+
+```bash
+git status --short
+```
+
+```bash
+git branch --show-current
+```
+
+```bash
+git remote get-url origin
+```
+
+Only pull if the remote points to `Inkflow-Gab/claude-code-cli`, the checkout is
+clean, and the branch is `main`. Otherwise use the fresh-installer fallback in
+the README without altering your checkout. Refresh without discarding work:
+
+```bash
+git pull --ff-only origin main
+```
+
+Stop if that fails; do not force-reset local changes. For a diverged or dirty
+checkout, follow the [fresh-installer fallback in the main README](../README.md#linux-ubuntu--debian)
+instead of running its old script. Confirm the updated script lists `--guided`:
+
+```bash
+sh scripts/install.sh --help
+```
+
+Then install:
+
 ```bash
 sh scripts/install.sh --guided
 ```
@@ -50,8 +82,8 @@ terminal open and finish provider/key and model setup in the local Admin UI
 (normally `http://127.0.0.1:8082/admin`). Open a second terminal and run
 `nullx` from any directory, then select your coding agent. For scripts or
 headless use, pass `--guided --agent codex`: this never starts a server
-without a terminal. While this PR is unmerged, add `--from-checkout` to
-install this checkout rather than GitHub `main`.
+without a terminal. Only use `--from-checkout` when intentionally testing
+local, unmerged source rather than the latest GitHub `main`.
 
 ## Ubuntu or Debian: Git + Make (alternative)
 
