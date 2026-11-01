@@ -1,15 +1,130 @@
-# Use Free Claude Code from a phone
+# Install or use Free Claude Code on a phone
 
-**Supported mobile setup:** FCC and the coding agent run on your own Ubuntu,
-macOS, or Windows **computer**. Your Android or iPhone uses Telegram or Discord
-to send requests; the agent edits files on the computer. You do **not** need to
-install Python, Ubuntu, or FCC on the phone. Follow the
-[computer installation guide](install-desktop.md) first.
+Choose **one** mode: experimental [Android on-device](#run-on-the-android-phone-experimental)
+installation, or [remote control](#phone-as-a-remote-control) of a computer.
+An iPhone cannot run this project locally; use remote control instead.
 
-**Not supported:** Running this project directly in Termux or proot Ubuntu on
-Android. The pinned Python and some coding-agent binaries may be unavailable,
-and Android may stop the server in the background. This guide does not claim
-that a phone can host FCC natively.
+## Run on the Android phone (experimental)
+
+**Not officially supported or tested on Android.** This may fail on your device:
+FCC pins Python 3.14.7 and requires dependencies and a coding-agent binary that
+may not have working ARM64/proot builds. This path installs **Ubuntu under
+Termux**, not native Android Python. Use a 64-bit device with enough free
+storage and memory. Stop at the first error; do not run installer commands
+with Android root permissions.
+
+Open the [official Termux app](https://termux.dev/) and enter each command
+separately in **Termux**:
+
+```sh
+uname -m
+```
+
+Check for `aarch64` (32-bit ARM builds are not expected to work).
+
+```sh
+pkg update
+```
+
+```sh
+pkg install proot-distro
+```
+
+```sh
+proot-distro install ubuntu
+```
+
+```sh
+proot-distro login ubuntu
+```
+
+The prompt is now Ubuntu inside proot. Run the following **inside Ubuntu**;
+proot commonly presents a simulated root user, so use `apt-get` without `sudo`:
+
+```sh
+apt-get update
+```
+
+```sh
+apt-get install -y ca-certificates curl git make
+```
+
+```sh
+git clone https://github.com/Inkflow-Gab/claude-code-cli.git
+```
+
+```sh
+cd claude-code-cli
+```
+
+Preview the single-agent install without network changes:
+
+```sh
+sh scripts/install.sh --dry-run --agent codex
+```
+
+If the preview succeeds, try the install. This downloads Python, FCC, and an
+upstream Codex installer; success depends on their ARM64 support:
+
+```sh
+sh scripts/install.sh --agent codex
+```
+
+```sh
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+```
+
+```sh
+sh scripts/check-setup.sh --agent codex
+```
+
+Start FCC on **loopback only** (keep Termux open):
+
+```sh
+HOST=127.0.0.1 fcc-server
+```
+
+Open `http://127.0.0.1:8082/admin` in the **same phone's browser**. Add a
+[provider](providers.md) key or account and select a model in Admin. Open a
+**second Termux session** and enter Ubuntu again:
+
+```sh
+proot-distro login ubuntu
+```
+
+In that second Ubuntu shell, go back to your checkout:
+
+```sh
+cd claude-code-cli
+```
+
+```sh
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+```
+
+```sh
+fcc-codex
+```
+
+Try a small prompt. FCC edits files **inside this phone's Ubuntu environment**.
+To reopen the environment later, run `proot-distro login ubuntu` in Termux,
+then restart FCC; closing Termux or Android background restrictions can kill
+it. Running `make setup` inside proot is **not** the recommended path: it uses
+`sudo` for system packages, which proot Ubuntu may not have. Use the explicit
+`apt-get` and `sh scripts/install.sh` commands above.
+
+**If installation fails:** Do not assume it will work by forcing incompatible
+wheels, downgrading Python, or switching to native Termux. Note the first
+upstream error (Python download, package wheel, or Codex binary); these are
+platform limitations, not a bot configuration issue. Use the
+[computer install](install-desktop.md) and remote mode below instead. Local
+Whisper and GPU/CUDA installation are not recommended in proot.
+
+## Phone as a remote control
+
+This is the **reliable option**: FCC and the agent run on a separate Ubuntu,
+macOS, or Windows computer. Android or iPhone uses Telegram/Discord. Install on
+the [computer first](install-desktop.md); the phone needs no Python or Ubuntu.
 
 ```text
 Phone app -> Telegram or Discord -> FCC server on your computer -> coding agent

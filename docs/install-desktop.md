@@ -13,10 +13,10 @@ installer with `sudo`.
 | Windows | [PowerShell](#windows-powershell) |
 | Headless Ubuntu server | [Git + Make](#ubuntu-install), then [local Admin access](#start-fcc-and-open-admin) |
 
-> **Android phone with Termux/proot Ubuntu?** On-device installation is not
-> supported: pinned Python and some agent binaries may not be available for
-> Android/ARM, and Android may stop background processes. To use FCC *from* a
-> phone, [run it on a computer and use the mobile guide](install-mobile.md).
+> **Android phone?** The [on-device Termux/proot experiment](install-mobile.md#run-on-the-android-phone-experimental)
+> may fail due to pinned Python/agent binaries and Android background limits.
+> Running FCC on a computer and using the phone as a remote control is the
+> reliable path.
 
 <a id="ubuntu-install"></a>
 

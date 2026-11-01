@@ -23,7 +23,8 @@
 
 Free Claude Code (FCC) runs on a **computer**, routes a coding agent to your
 chosen provider, and needs a provider key or account. **Run one command at a
-time.** The phone is a remote control, not a supported FCC host.
+time.** Android on-device setup is experimental; the computer setup is the
+reliable option.
 
 <a id="install"></a>
 
@@ -107,32 +108,90 @@ fcc-codex
 
 <a id="ubuntu-and-phone-setup"></a>
 
-### Mobile (Android / iPhone)
+### Android phone: run FCC on the phone (experimental)
 
-**FCC does not install directly on the phone.** First complete the Linux or
-Windows setup above on a computer and **keep its server running**. To control
-that computer from Telegram on your phone:
+**Android 64-bit only; not verified on-device.** Open [Termux](https://termux.dev/)
+(the official build, not an outdated Play Store copy). Run these **in Termux**:
 
-1. Send this to [@BotFather](https://t.me/BotFather) **in Telegram**:
+```sh
+pkg update
+```
 
-   ```text
-   /newbot
-   ```
+```sh
+pkg install proot-distro
+```
 
-2. Send this to [@userinfobot](https://t.me/userinfobot) **in Telegram**:
+```sh
+proot-distro install ubuntu
+```
 
-   ```text
-   /start
-   ```
+```sh
+proot-distro login ubuntu
+```
 
-3. On the **computer**, open local Admin → **Messaging**. Set platform to
-   `telegram`, paste the BotFather token and your numeric user ID, set
-   **Allowed Directory** to a project folder on the computer, then click
-   **Apply**. Restart the server if prompted.
-4. On the **phone**, open your new bot, tap **Start**, and message it. The agent
-   edits files on the computer. **Never expose Admin or port 8082 publicly.**
+Now **inside Ubuntu in Termux** (not in Android's regular shell):
 
-[Full mobile walkthrough (including Discord) →](docs/install-mobile.md)
+```sh
+apt-get update
+```
+
+```sh
+apt-get install -y ca-certificates curl git make
+```
+
+```sh
+git clone https://github.com/Inkflow-Gab/claude-code-cli.git
+```
+
+```sh
+cd claude-code-cli
+```
+
+```sh
+sh scripts/install.sh --dry-run --agent codex
+```
+
+```sh
+sh scripts/install.sh --agent codex
+```
+
+```sh
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+```
+
+```sh
+sh scripts/check-setup.sh --agent codex
+```
+
+Start the server **inside Ubuntu**; keep Termux running:
+
+```sh
+HOST=127.0.0.1 fcc-server
+```
+
+Open `http://127.0.0.1:8082/admin` in your phone's browser, add a
+[provider](docs/providers.md) and select a model. In a **second Ubuntu session**
+(`proot-distro login ubuntu` in another Termux session), start Codex:
+
+```sh
+fcc-codex
+```
+
+If the Python/agent installer fails, stop: **Termux/proot is not a supported
+platform**, and some ARM64 binaries may be unavailable. Do not install as
+Android native Termux (without Ubuntu). See [Android caveats and fixes](docs/install-mobile.md#run-on-the-android-phone-experimental).
+
+### iPhone or phone as a remote control (Telegram)
+
+No on-device FCC installer is available for iPhone. Instead, complete the
+Linux or Windows computer setup above and **keep that server running**. From
+your phone, send `/newbot` to [@BotFather](https://t.me/BotFather), then `/start`
+to [@userinfobot](https://t.me/userinfobot). On the **computer**, open local
+Admin → **Messaging**: select `telegram`, enter your bot token and numeric
+user ID, set **Allowed Directory** to a project folder, and click **Apply**.
+Message your bot from the phone. Never expose Admin or port 8082 publicly.
+
+[Complete remote-phone walkthrough (Telegram and Discord) →](docs/install-mobile.md#phone-as-a-remote-control)
 
 ### Other platforms and options
 
