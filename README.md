@@ -48,6 +48,19 @@ git clone https://github.com/Inkflow-Gab/claude-code-cli.git
 cd claude-code-cli
 ```
 
+If you are reading **open PR #4 before it merges**, this clone is still the
+older `main`. Fetch its code before `make setup` (save local edits first):
+
+```bash
+git fetch origin pull/4/head
+```
+
+```bash
+git switch --detach FETCH_HEAD
+```
+
+Fresh clones of `main` after the PR merges can skip those two commands.
+
 ```bash
 make setup AGENT=codex
 ```
@@ -146,6 +159,22 @@ git clone https://github.com/Inkflow-Gab/claude-code-cli.git
 ```sh
 cd claude-code-cli
 ```
+
+**If you cloned `main` while reading open PR #4**, your checkout is older than
+these commands. In that checkout, fetch the PR code **before installing**:
+
+```sh
+git fetch origin pull/4/head
+```
+
+```sh
+git switch --detach FETCH_HEAD
+```
+
+Check that `sh scripts/install.sh --help` lists `--agent` and that
+`scripts/check-setup.sh` exists. If you have local edits, save them before
+switching; Git may refuse to switch otherwise. After PR #4 merges, a fresh
+`main` clone no longer needs the fetch/switch steps.
 
 ```sh
 sh scripts/install.sh --dry-run --agent codex

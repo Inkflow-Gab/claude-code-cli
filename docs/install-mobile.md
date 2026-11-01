@@ -57,6 +57,20 @@ git clone https://github.com/Inkflow-Gab/claude-code-cli.git
 cd claude-code-cli
 ```
 
+**If reading these instructions from open PR #4 before merge:** `git clone`
+checks out older `main`, which does not know `--agent` and does not have
+`check-setup.sh`. If `sh scripts/install.sh --help` does not list `--agent`,
+fetch the PR version now (save any local changes first):
+
+```sh
+git fetch origin pull/4/head
+```
+
+```sh
+git switch --detach FETCH_HEAD
+```
+
+After the PR merges, fresh clones of `main` have these files and can skip this.
 Preview the single-agent install without network changes:
 
 ```sh
